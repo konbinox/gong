@@ -3,17 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>中国打击乐</title>
+  <title>打击乐</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
     body {
-      font-family: "Helvetica", "Microsoft YaHei", sans-serif;
-      background: #f8f4ed;
-      overflow: hidden;
+      font-family: sans-serif;
+      background: #f0f0f0;
       height: 100vh;
-      position: relative;
+      overflow: hidden;
     }
-
     #select-screen {
       display: flex;
       flex-direction: column;
@@ -22,77 +20,60 @@
       padding: 20px;
       height: 100vh;
     }
-    .select-title {
-      font-size: 24px;
-      margin-bottom: 30px;
-      color: #5d4037;
-    }
-    .instrument-grid {
+    .title { font-size: 22px; margin-bottom: 25px; }
+    .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      gap: 18px;
       width: 90%;
       max-width: 500px;
     }
     @media (min-width: 600px) {
-      .instrument-grid {
-        grid-template-columns: repeat(5, 1fr);
-      }
+      .grid { grid-template-columns: repeat(5, 1fr); }
     }
-    .select-btn {
-      padding: 20px 10px;
-      background: #d7ccc8;
+    .btn {
+      padding: 18px 8px;
+      background: #e0c9a6;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       font-size: 16px;
-      color: #4e342e;
       cursor: pointer;
-      text-align: center;
-      transition: background 0.2s;
     }
-    .select-btn:active {
-      background: #bcaaa4;
-    }
-
     #play-screen {
       display: none;
-      background: #e0d3c5;
+      background: #e8e0d0;
       width: 100vw;
       height: 100vh;
       position: relative;
     }
-    #play-screen.active {
-      display: block;
-    }
+    #play-screen.active { display: block; }
     #home-btn {
       position: absolute;
       top: 12px;
       right: 12px;
-      font-size: 24px;
-      background: rgba(255,255,255,0.7);
       width: 36px;
       height: 36px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      z-index: 10;
       border: none;
-      color: #5d4037;
+      background: #fff8;
+      border-radius: 50%;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
 <div id="select-screen">
-  <div class="select-title">请选择乐器</div>
-  <div class="instrument-grid">
-    <button class="select-btn" data-inst="dagu">大鼓</button>
-    <button class="select-btn" data-inst="xiaoluo">小锣</button>
-    <button class="select-btn" data-inst="bo">铜钹</button>
-    <button class="select-btn" data-inst="muyu">木鱼</button>
-    <button class="select-btn" data-inst="shaker">沙锤</button>
+  <div class="title">选乐器</div>
+  <div class="grid">
+    <button class="btn" data-inst="dagu">大鼓</button>
+    <button class="btn" data-inst="xiaoluo">小锣</button>
+    <button class="btn" data-inst="bo">铜钹</button>
+    <button class="btn" data-inst="muyu">木鱼</button>
+    <button class="btn" data-inst="shaker">沙锤</button>
   </div>
 </div>
 
@@ -101,65 +82,76 @@
 </div>
 
 <script>
-  // 音频映射
-  const soundUrls = {
-    dagu:    "https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b8a8b6d7c.mp3?filename=drum-sound-1-110094.mp3",
-    xiaoluo: "https://cdn.pixabay.com/download/audio/2022/02/21/audio_c3b9a6a5a1.mp3?filename=gong-chinese-gong-102896.mp3",
-    bo:      "https://cdn.pixabay.com/download/audio/2022/03/15/audio_e9f5d8d14a.mp3?filename=cymbals-sound-1-110096.mp3",
-    muyu:    "https://cdn.pixabay.com/download/audio/2022/03/15/audio_1f3e7d2fa2.mp3?filename=wood-block-hit-1-110091.mp3",
-    shaker:  "https://cdn.pixabay.com/download/audio/2022/05/12/audio_6a1b8d28f0.mp3?filename=maracas-1-125224.mp3"
+  // 音频URL（备用：若加载失败，至少界面能用）
+  const urls = {
+    dagu: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b8a8b6d7c.mp3",
+    xiaoluo: "https://cdn.pixabay.com/download/audio/2022/02/21/audio_c3b9a6a5a1.mp3",
+    bo: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_e9f5d8d14a.mp3",
+    muyu: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_1f3e7d2fa2.mp3",
+    shaker: "https://cdn.pixabay.com/download/audio/2022/05/12/audio_6a1b8d28f0.mp3"
   };
 
-  let currentAudio = null;
-  let audioContextLocked = true;
+  let currentInst = null;
+  let ctx = null;
+  const buffers = {};
 
-  // 创建一个 Web Audio 上下文（兼容性更好）
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  const audioCtx = new AudioContext();
-
-  // 预加载音频为 ArrayBuffer（更可靠）
-  const audioBuffers = {};
-
-  function loadAudio(url, name) {
-    fetch(url)
-      .then(response => response.arrayBuffer())
-      .then(data => audioCtx.decodeAudioData(data))
-      .then(buffer => {
-        audioBuffers[name] = buffer;
-      })
-      .catch(err => console.error('加载失败', name, err));
+  // 初始化 Web Audio（延迟到用户交互时）
+  function initAudio() {
+    if (ctx) return;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    loadAllSounds();
   }
 
-  for (const key in soundUrls) {
-    loadAudio(soundUrls[key], key);
+  function loadAllSounds() {
+    for (const name in urls) {
+      fetch(urls[name])
+        .then(r => r.arrayBuffer())
+        .then(ab => ctx.decodeAudioData(ab))
+        .then(buf => { buffers[name] = buf; })
+        .catch(() => console.warn('声音加载失败:', name));
+    }
   }
 
-  // 播放函数（使用 Web Audio API）
-  function playBuffer(name) {
-    if (!audioBuffers[name]) return;
-    const source = audioCtx.createBufferSource();
-    source.buffer = audioBuffers[name];
-    source.connect(audioCtx.destination);
-    source.start(0);
+  function playNow(name) {
+    if (!ctx) return;
+    const buf = buffers[name];
+    if (buf) {
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start();
+    }
   }
 
-  // 点击乐器按钮：进入播放界面 + 解锁音频
-  document.querySelectorAll('.select-btn').forEach(btn => {
+  // —————— 事件绑定 ——————
+
+  // 点击乐器：立即切换界面 + 初始化音频
+  document.querySelectorAll('.btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const inst = btn.dataset.inst;
+      currentInst = btn.dataset.inst;
+      initAudio(); // 在用户手势中初始化
+      document.getElementById('select-screen').style.display = 'none';
+      document.getElementById('play-screen').classList.add('active');
+    });
+  });
 
-      // 关键：在此用户手势中启动音频上下文（解锁）
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+  // 返回
+  document.getElementById('home-btn').addEventListener('click', () => {
+    document.getElementById('play-screen').classList.remove('active');
+    document.getElementById('select-screen').style.display = 'flex';
+  });
 
-      // 可选：立即播放一声（帮助解锁）
-      if (audioBuffers[inst]) {
-        const source = audioCtx.createBufferSource();
-        source.buffer = audioBuffers[inst];
-        source.connect(audioCtx.destination);
-        source.start(0);
-      }
-
-      // 切换界面
-      document.getElementById('select
+  // 全屏点击发声
+  document.getElementById('play-screen').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (currentInst && ctx?.state === 'running') {
+      playNow(currentInst);
+    }
+    // 如果 ctx 还没运行，尝试恢复（部分浏览器需要）
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().then(() => playNow(currentInst));
+    }
+  });
+</script>
+</body>
+</html>
