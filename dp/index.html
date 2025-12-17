@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三句半·终极打击乐系统</title>
+    <title>三句半·完整控制打击乐系统</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -23,6 +23,39 @@
             text-shadow: 0 0 10px rgba(255, 209, 102, 0.5);
         }
         
+        /* 紧急控制区 */
+        .emergency-control {
+            background: rgba(239, 71, 111, 0.1);
+            border: 2px solid rgba(239, 71, 111, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .emergency-btn {
+            width: 100%;
+            padding: 20px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #ef476f, #ff0054);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(239, 71, 111, 0.4);
+        }
+        .emergency-btn.stop-all {
+            background: linear-gradient(135deg, #ff5400, #ff0054);
+        }
+        .emergency-btn.reset {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+        }
+        
         /* 状态指示 */
         .status {
             padding: 12px;
@@ -33,9 +66,20 @@
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .status.loading { background: rgba(255,200,0,0.1); border-color: #ffcc00; }
-        .status.success { background: rgba(0,200,100,0.1); border-color: #00cc66; }
-        .status.error { background: rgba(255,50,50,0.1); border-color: #ff3333; }
+        .status.playing { 
+            background: rgba(6, 214, 160, 0.1); 
+            border-color: #06d6a0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(6, 214, 160, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(6, 214, 160, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 214, 160, 0); }
+        }
+        .status.stopped { 
+            background: rgba(239, 71, 111, 0.1); 
+            border-color: #ef476f; 
+        }
         
         /* 鼓点控制区 */
         .drum-control {
@@ -45,28 +89,33 @@
             padding: 20px;
             margin: 20px 0;
         }
-        .drum-buttons {
+        .control-buttons {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
             margin-top: 15px;
         }
-        .drum-btn {
-            padding: 15px;
-            border-radius: 10px;
+        .control-btn {
+            padding: 12px 8px;
+            border-radius: 8px;
             border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+        .control-btn.active {
             background: linear-gradient(135deg, #ffd166, #ff9e00);
             color: #333;
             font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
-        .drum-btn.stop {
-            background: linear-gradient(135deg, #ef476f, #ff0054);
-            color: white;
+        .control-btn.stop {
+            background: rgba(239, 71, 111, 0.3);
+            color: #ffccd5;
         }
         
         /* 乐器网格 */
@@ -88,10 +137,34 @@
             flex-direction: column;
             align-items: center;
             gap: 5px;
-            transition: all 0.2s;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
         }
         .inst-btn:active {
             transform: scale(0.95);
+        }
+        .inst-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.1);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .inst-btn:active::after {
+            opacity: 1;
+        }
+        .inst-btn.playing {
+            animation: highlight 0.5s ease;
+        }
+        @keyframes highlight {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
         }
         .inst-btn.gong { border-color: #ff9e00; }
         .inst-btn.cymbal { border-color: #06d6a0; }
@@ -107,11 +180,19 @@
             padding: 15px;
             margin: 15px 0;
         }
+        .slider-group {
+            margin: 15px 0;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
         .volume-slider {
             width: 100%;
-            margin: 10px 0;
-            -webkit-appearance: none;
             height: 6px;
+            -webkit-appearance: none;
             border-radius: 3px;
             background: linear-gradient(90deg, #1a1a2e, #4361ee);
         }
@@ -122,6 +203,7 @@
             border-radius: 50%;
             background: #4361ee;
             border: 2px solid white;
+            cursor: pointer;
         }
         
         /* 三句半演示区 */
@@ -132,60 +214,124 @@
             padding: 20px;
             margin: 20px 0;
         }
+        .demo-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
         .demo-btn {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
+            padding: 15px 10px;
             border-radius: 10px;
             border: none;
-            background: linear-gradient(135deg, #7209b7, #3a0ca3);
+            background: rgba(255,255,255,0.1);
             color: white;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
+        }
+        .demo-btn.play {
+            background: linear-gradient(135deg, #7209b7, #3a0ca3);
+        }
+        .demo-btn.stop {
+            background: linear-gradient(135deg, #ef476f, #ff0054);
+        }
+        
+        /* 当前播放状态 */
+        .now-playing {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            min-height: 60px;
+        }
+        .now-playing h4 {
+            margin: 0 0 10px 0;
+            color: #4cc9f0;
+            font-size: 0.9rem;
+        }
+        .playing-item {
+            display: inline-block;
+            background: rgba(6, 214, 160, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin: 3px;
+            font-size: 0.8rem;
+            border: 1px solid #06d6a0;
         }
         
         @media (max-width: 600px) {
             h1 { font-size: 1.5rem; }
             .instrument-grid { grid-template-columns: repeat(2, 1fr); }
             .inst-btn { padding: 15px 8px; font-size: 0.8rem; }
+            .control-buttons { grid-template-columns: repeat(2, 1fr); }
+            .demo-buttons { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🥁 三句半·终极打击乐系统</h1>
-            <p style="color: #a0d2ff; opacity: 0.9;">锣声 × 镲声 × 鼓点循环 × 基础音效</p>
+            <h1>⏹️ 三句半·完整控制打击乐系统</h1>
+            <p style="color: #a0d2ff; opacity: 0.9;">带紧急停止功能 | 完整演出控制</p>
         </header>
         
+        <!-- 紧急控制区 -->
+        <div class="emergency-control">
+            <h3 style="margin: 0 0 15px 0; color: #ef476f;">🚨 紧急控制</h3>
+            <button class="emergency-btn stop-all" id="stopAllBtn">
+                <span style="font-size: 1.5rem;">⏹️</span>
+                立即停止所有声音
+            </button>
+            <button class="emergency-btn reset" id="resetBtn">
+                <span style="font-size: 1.5rem;">🔄</span>
+                重置所有设置
+            </button>
+        </div>
+        
+        <!-- 当前播放状态 -->
+        <div class="now-playing">
+            <h4>🎵 当前播放中:</h4>
+            <div id="nowPlayingList">无</div>
+        </div>
+        
         <!-- 状态指示 -->
-        <div class="status loading" id="status">
-            正在初始化音频系统...
+        <div class="status" id="status">
+            系统准备中...
         </div>
         
         <!-- 鼓点控制区 -->
         <div class="drum-control">
-            <h3 style="margin: 0 0 15px 0; color: #ffd166;">🎵 鼓点循环控制</h3>
-            <div class="drum-buttons">
-                <button class="drum-btn" id="loadDrumBtn">
-                    <span>📁</span> 加载鼓点
+            <h3 style="margin: 0 0 15px 0; color: #ffd166;">🥁 鼓点循环控制</h3>
+            <div class="control-buttons">
+                <button class="control-btn" id="loadDrumBtn">
+                    <span>📁</span> 加载
                 </button>
-                <button class="drum-btn" id="playDrumBtn" disabled>
-                    <span>▶️</span> 播放循环
+                <button class="control-btn" id="playDrumBtn" disabled>
+                    <span>▶️</span> 播放
                 </button>
-                <button class="drum-btn stop" id="stopDrumBtn" disabled>
+                <button class="control-btn stop" id="stopDrumBtn" disabled>
                     <span>⏹️</span> 停止
                 </button>
-                <button class="drum-btn" id="autoDrumBtn" disabled>
-                    <span>🔁</span> 智能穿插
+                <button class="control-btn" id="pauseDrumBtn" disabled>
+                    <span>⏸️</span> 暂停
                 </button>
-            </div>
-            <div style="font-size: 0.8rem; margin-top: 10px; color: #aaa;">
-                自动加载同目录下的 amen.mp3 文件
+                <button class="control-btn" id="autoDrumBtn" disabled>
+                    <span>🔁</span> 自动
+                </button>
+                <button class="control-btn stop" id="stopAutoBtn" disabled>
+                    <span>✖️</span> 停自动
+                </button>
+                <button class="control-btn" id="volumeUpBtn">
+                    <span>🔊</span> 音量+
+                </button>
+                <button class="control-btn" id="volumeDownBtn">
+                    <span>🔉</span> 音量-
+                </button>
             </div>
         </div>
         
@@ -230,16 +376,16 @@
         
         <!-- 音量控制 -->
         <div class="volume-controls">
-            <h4 style="margin: 0 0 10px 0; color: #4cc9f0;">🔊 音量控制</h4>
-            <div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <h4 style="margin: 0 0 15px 0; color: #4cc9f0;">🎚️ 音量控制</h4>
+            <div class="slider-group">
+                <div class="slider-label">
                     <span>乐器音量</span>
                     <span id="instVolValue">70%</span>
                 </div>
                 <input type="range" min="10" max="100" value="70" class="volume-slider" id="instVolSlider">
             </div>
-            <div style="margin-top: 15px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <div class="slider-group">
+                <div class="slider-label">
                     <span>鼓点音量</span>
                     <span id="drumVolValue">50%</span>
                 </div>
@@ -249,15 +395,25 @@
         
         <!-- 三句半演示区 -->
         <div class="demo-zone">
-            <h3 style="margin: 0 0 15px 0; color: #7209b7;">🎭 三句半演示</h3>
-            <button class="demo-btn" id="demoSequenceBtn">
-                <span style="font-size: 1.3rem;">🎬</span>
-                完整三句半演示
-            </button>
-            <button class="demo-btn" id="quickTestBtn">
-                <span style="font-size: 1.3rem;">⚡</span>
-                快速音效测试
-            </button>
+            <h3 style="margin: 0 0 15px 0; color: #7209b7;">🎭 三句半演出控制</h3>
+            <div class="demo-buttons">
+                <button class="demo-btn play" id="demoSequenceBtn">
+                    <span>🎬</span>
+                    完整演示
+                </button>
+                <button class="demo-btn stop" id="stopDemoBtn">
+                    <span>⏹️</span>
+                    停止演示
+                </button>
+                <button class="demo-btn play" id="quickTestBtn">
+                    <span>⚡</span>
+                    快速测试
+                </button>
+                <button class="demo-btn" id="muteBtn">
+                    <span>🔇</span>
+                    全部静音
+                </button>
+            </div>
         </div>
         
         <!-- 文件加载状态 -->
@@ -267,20 +423,25 @@
     </div>
 
     <script>
-        // 简洁实用的三句半音频系统
-        class SanJuBanAudioSystem {
+        // 完整控制的三句半音频系统
+        class CompleteAudioSystem {
             constructor() {
                 this.audioContext = null;
-                this.buffers = {}; // 存储所有音频缓冲
-                this.drumAudio = null; // 鼓点音频
+                this.buffers = {};
+                this.activeSources = new Set(); // 存储所有正在播放的音源
+                this.drumAudio = null;
                 this.isDrumPlaying = false;
+                this.isDrumPaused = false;
                 this.isDrumLoaded = false;
                 this.autoMode = false;
                 this.autoTimer = null;
+                this.demoTimer = null;
+                this.isMuted = false;
                 
                 // 音量控制
                 this.instrumentVolume = 0.7;
                 this.drumVolume = 0.5;
+                this.mutedVolume = 0;
                 
                 // 文件加载状态
                 this.loadedFiles = {
@@ -288,6 +449,9 @@
                     cymbal: false,
                     drum: false
                 };
+                
+                // 当前播放列表
+                this.nowPlaying = [];
             }
             
             // 初始化音频系统
@@ -296,18 +460,14 @@
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     this.updateStatus('✅ 音频引擎启动成功', 'success');
                     
-                    // 解锁iOS音频限制
-                    document.addEventListener('touchstart', () => {
-                        if (this.audioContext.state === 'suspended') {
-                            this.audioContext.resume();
-                        }
-                    }, { once: true });
-                    
                     // 预加载基础音效
                     this.generateBasicSounds();
                     
                     // 开始加载外部文件
                     this.loadAudioFiles();
+                    
+                    // 更新按钮状态
+                    this.updateButtonStates();
                     
                     return true;
                 } catch (error) {
@@ -320,26 +480,24 @@
             async loadAudioFiles() {
                 this.updateFileStatus('开始加载音频文件...');
                 
-                // 文件列表
                 const files = [
                     { name: 'gong', url: '9722.wav', desc: '锣声' },
                     { name: 'cymbal', url: 'cymbal.wav', desc: '镲声' },
                     { name: 'drum', url: 'amen.mp3', desc: '鼓点循环' }
                 ];
                 
-                // 并行加载
                 const promises = files.map(file => this.loadSingleFile(file));
                 
                 try {
                     await Promise.allSettled(promises);
                     
-                    // 检查加载结果
                     const loaded = Object.values(this.loadedFiles).filter(Boolean).length;
                     this.updateFileStatus(`✅ 已加载 ${loaded}/3 个音频文件`);
                     
                     if (this.loadedFiles.drum) {
                         document.getElementById('playDrumBtn').disabled = false;
                         document.getElementById('autoDrumBtn').disabled = false;
+                        this.updateButtonStates();
                     }
                     
                 } catch (error) {
@@ -350,77 +508,47 @@
             // 加载单个文件
             async loadSingleFile(file) {
                 try {
-                    this.updateFileStatus(`正在加载 ${file.desc} (${file.url})...`);
+                    this.updateFileStatus(`正在加载 ${file.desc}...`);
                     
                     const response = await fetch(file.url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     
                     const arrayBuffer = await response.arrayBuffer();
                     this.buffers[file.name] = await this.audioContext.decodeAudioData(arrayBuffer);
                     this.loadedFiles[file.name] = true;
                     
-                    console.log(`✅ ${file.desc} 加载成功`);
                     return true;
                 } catch (error) {
-                    console.warn(`❌ ${file.desc} 加载失败:`, error);
-                    
-                    // 生成替代音效
                     this.generateFallbackSound(file.name);
                     this.loadedFiles[file.name] = true;
                     return false;
                 }
             }
             
-            // 生成基础合成音效
-            generateBasicSounds() {
-                const sounds = {
-                    woodblock: this.createWoodblockSound(),
-                    clapper: this.createClapperSound(),
-                    bell: this.createBellSound(),
-                    drum: this.createDrumSound()
-                };
-                
-                Object.assign(this.buffers, sounds);
-            }
-            
-            // 生成替代音效（当文件加载失败时）
-            generateFallbackSound(type) {
-                console.log(`生成替代音效: ${type}`);
-                
-                switch(type) {
-                    case 'gong':
-                        this.buffers.gong = this.createGongSound();
-                        break;
-                    case 'cymbal':
-                        this.buffers.cymbal = this.createCymbalSound();
-                        break;
-                    case 'drum':
-                        this.generateBasicSounds(); // drum音效已经在基础音效中
-                        break;
-                }
-            }
-            
             // 播放乐器音效
             playInstrument(type) {
-                if (!this.audioContext) return;
+                if (!this.audioContext || this.isMuted) return;
                 
                 const buffer = this.buffers[type];
-                if (!buffer) {
-                    console.warn(`音效未加载: ${type}`);
-                    return;
-                }
+                if (!buffer) return;
                 
                 const source = this.audioContext.createBufferSource();
                 source.buffer = buffer;
                 
-                // 音量控制
                 const gainNode = this.audioContext.createGain();
-                gainNode.gain.value = this.instrumentVolume;
+                gainNode.gain.value = this.isMuted ? this.mutedVolume : this.instrumentVolume;
                 
                 source.connect(gainNode);
                 gainNode.connect(this.audioContext.destination);
+                
+                // 存储音源以便后续停止
+                this.activeSources.add(source);
+                
+                // 播放完成后清理
+                source.onended = () => {
+                    this.activeSources.delete(source);
+                    this.removeFromNowPlaying(type);
+                };
                 
                 source.start();
                 
@@ -429,13 +557,15 @@
                     gong: '锣声', cymbal: '镲声', woodblock: '木鱼',
                     clapper: '响板', bell: '铃铛', drum: '小鼓'
                 };
-                this.updateStatus(`🎵 播放: ${names[type] || type}`, 'success');
+                
+                this.addToNowPlaying(names[type] || type);
+                this.updateStatus(`🎵 播放: ${names[type] || type}`, 'playing');
                 
                 // 按钮反馈
                 const btn = document.querySelector(`[data-instrument="${type}"]`);
                 if (btn) {
-                    btn.style.transform = 'scale(0.95)';
-                    setTimeout(() => btn.style.transform = 'scale(1)', 100);
+                    btn.classList.add('playing');
+                    setTimeout(() => btn.classList.remove('playing'), 500);
                 }
             }
             
@@ -446,8 +576,13 @@
                     return;
                 }
                 
-                if (this.isDrumPlaying) {
-                    this.stopDrumLoop();
+                if (this.isDrumPlaying && !this.isDrumPaused) {
+                    this.pauseDrumLoop();
+                    return;
+                }
+                
+                if (this.isDrumPaused) {
+                    this.resumeDrumLoop();
                     return;
                 }
                 
@@ -455,69 +590,100 @@
                 this.drumAudio.buffer = this.buffers.drum;
                 this.drumAudio.loop = true;
                 
-                const gainNode = this.audioContext.createGain();
-                gainNode.gain.value = this.drumVolume;
+                this.drumGain = this.audioContext.createGain();
+                this.drumGain.gain.value = this.isMuted ? this.mutedVolume : this.drumVolume;
                 
-                this.drumAudio.connect(gainNode);
-                gainNode.connect(this.audioContext.destination);
+                this.drumAudio.connect(this.drumGain);
+                this.drumGain.connect(this.audioContext.destination);
                 
                 this.drumAudio.start();
                 this.isDrumPlaying = true;
+                this.isDrumPaused = false;
                 
-                document.getElementById('playDrumBtn').innerHTML = '<span>⏸️</span> 暂停循环';
-                this.updateStatus('🎵 鼓点循环播放中...', 'success');
+                this.activeSources.add(this.drumAudio);
+                this.addToNowPlaying('鼓点循环');
+                
+                document.getElementById('playDrumBtn').innerHTML = '<span>⏸️</span> 暂停';
+                document.getElementById('pauseDrumBtn').disabled = false;
+                document.getElementById('stopDrumBtn').disabled = false;
+                
+                this.updateStatus('🎵 鼓点循环播放中...', 'playing');
+            }
+            
+            // 暂停鼓点循环
+            pauseDrumLoop() {
+                if (!this.isDrumPlaying || this.isDrumPaused) return;
+                
+                if (this.drumAudio) {
+                    this.drumAudio.stop();
+                    this.activeSources.delete(this.drumAudio);
+                }
+                
+                this.isDrumPaused = true;
+                document.getElementById('playDrumBtn').innerHTML = '<span>▶️</span> 继续';
+                this.updateStatus('⏸️ 鼓点已暂停', 'info');
+            }
+            
+            // 恢复鼓点循环
+            resumeDrumLoop() {
+                if (!this.isDrumPaused) return;
+                
+                this.playDrumLoop(); // 重新开始播放
             }
             
             // 停止鼓点循环
             stopDrumLoop() {
                 if (this.drumAudio) {
                     this.drumAudio.stop();
+                    this.activeSources.delete(this.drumAudio);
                     this.drumAudio = null;
                 }
+                
                 this.isDrumPlaying = false;
-                document.getElementById('playDrumBtn').innerHTML = '<span>▶️</span> 播放循环';
+                this.isDrumPaused = false;
+                
+                this.removeFromNowPlaying('鼓点循环');
+                
+                document.getElementById('playDrumBtn').innerHTML = '<span>▶️</span> 播放';
+                document.getElementById('pauseDrumBtn').disabled = true;
+                document.getElementById('stopDrumBtn').disabled = true;
+                
                 this.updateStatus('⏹️ 鼓点已停止', 'info');
             }
             
             // 智能穿插模式
-            toggleAutoMode() {
-                if (this.autoMode) {
-                    this.stopAutoMode();
-                    document.getElementById('autoDrumBtn').innerHTML = '<span>🔁</span> 智能穿插';
-                    this.updateStatus('⏹️ 自动模式停止', 'info');
-                } else {
-                    this.startAutoMode();
-                    document.getElementById('autoDrumBtn').innerHTML = '<span>⏹️</span> 停止自动';
-                    this.updateStatus('🔁 智能穿插模式启动', 'success');
-                }
-            }
-            
             startAutoMode() {
-                this.autoMode = true;
+                if (this.autoMode) return;
                 
-                // 随机播放鼓点（间隔10-20秒）
+                this.autoMode = true;
+                document.getElementById('autoDrumBtn').disabled = true;
+                document.getElementById('stopAutoBtn').disabled = false;
+                
+                this.updateStatus('🔁 智能穿插模式启动', 'playing');
+                
+                // 随机播放鼓点
                 const playRandomDrum = () => {
                     if (!this.autoMode) return;
                     
-                    const delay = 10000 + Math.random() * 10000;
+                    const delay = 8000 + Math.random() * 12000; // 8-20秒
                     
                     this.autoTimer = setTimeout(() => {
                         if (this.autoMode && this.loadedFiles.drum) {
                             this.playDrumLoop();
+                            
                             setTimeout(() => {
                                 if (this.autoMode) this.stopDrumLoop();
-                            }, 3000 + Math.random() * 3000);
-                            
-                            playRandomDrum(); // 安排下一次
+                                playRandomDrum(); // 安排下一次
+                            }, 2000 + Math.random() * 3000);
                         }
                     }, delay);
                 };
                 
-                // 随机播放乐器音效（间隔3-8秒）
+                // 随机播放乐器
                 const playRandomInstrument = () => {
                     if (!this.autoMode) return;
                     
-                    const delay = 3000 + Math.random() * 5000;
+                    const delay = 2000 + Math.random() * 4000; // 2-6秒
                     
                     setTimeout(() => {
                         if (this.autoMode) {
@@ -533,13 +699,21 @@
                 playRandomInstrument();
             }
             
+            // 停止智能模式
             stopAutoMode() {
                 this.autoMode = false;
+                
                 if (this.autoTimer) {
                     clearTimeout(this.autoTimer);
                     this.autoTimer = null;
                 }
+                
                 this.stopDrumLoop();
+                
+                document.getElementById('autoDrumBtn').disabled = false;
+                document.getElementById('stopAutoBtn').disabled = true;
+                
+                this.updateStatus('⏹️ 智能模式已停止', 'info');
             }
             
             // 三句半完整演示
@@ -550,73 +724,237 @@
                     return;
                 }
                 
-                this.updateStatus('🎬 开始三句半完整演示...', 'loading');
+                this.updateStatus('🎬 开始三句半完整演示...', 'playing');
+                document.getElementById('demoSequenceBtn').disabled = true;
+                document.getElementById('stopDemoBtn').disabled = false;
                 
                 const sequence = [
-                    { time: 0, type: 'woodblock', desc: '甲：木鱼' },
-                    { time: 1000, type: 'clapper', desc: '乙：响板' },
-                    { time: 2000, type: 'bell', desc: '丙：铃铛' },
-                    { time: 3000, type: 'gong', desc: '丁：锣声（第一句）' },
+                    { time: 0, type: 'woodblock', desc: '第一句 - 木鱼' },
+                    { time: 1000, type: 'clapper', desc: '第一句 - 响板' },
+                    { time: 2000, type: 'bell', desc: '第一句 - 铃铛' },
+                    { time: 3000, type: 'gong', desc: '第一句 - 锣声' },
                     
-                    { time: 4000, type: 'woodblock', desc: '甲：木鱼' },
-                    { time: 5000, type: 'clapper', desc: '乙：响板' },
-                    { time: 6000, type: 'bell', desc: '丙：铃铛' },
-                    { time: 7000, type: 'gong', desc: '丁：锣声（第二句）' },
+                    { time: 4000, type: 'woodblock', desc: '第二句 - 木鱼' },
+                    { time: 5000, type: 'clapper', desc: '第二句 - 响板' },
+                    { time: 6000, type: 'bell', desc: '第二句 - 铃铛' },
+                    { time: 7000, type: 'gong', desc: '第二句 - 锣声' },
                     
-                    { time: 8000, type: 'woodblock', desc: '甲：木鱼' },
-                    { time: 9000, type: 'clapper', desc: '乙：响板' },
-                    { time: 10000, type: 'bell', desc: '丙：铃铛' },
-                    { time: 11000, type: 'cymbal', desc: '丁：镲声（第三句高潮）' },
+                    { time: 8000, type: 'woodblock', desc: '第三句 - 木鱼' },
+                    { time: 9000, type: 'clapper', desc: '第三句 - 响板' },
+                    { time: 10000, type: 'bell', desc: '第三句 - 铃铛' },
+                    { time: 11000, type: 'cymbal', desc: '第三句 - 镲声（高潮）' },
                     
-                    { time: 12000, type: 'woodblock', desc: '甲：木鱼' },
-                    { time: 13000, type: 'clapper', desc: '乙：响板' },
-                    { time: 14000, type: 'bell', desc: '丙：铃铛' },
-                    { time: 15000, type: 'gong', desc: '丁：锣声（半句，收尾）' },
+                    { time: 12000, type: 'woodblock', desc: '半句 - 木鱼' },
+                    { time: 13000, type: 'clapper', desc: '半句 - 响板' },
+                    { time: 14000, type: 'bell', desc: '半句 - 铃铛' },
+                    { time: 15000, type: 'gong', desc: '半句 - 锣声（结尾）' },
                 ];
+                
+                this.demoTimer = { clear: () => {} };
                 
                 sequence.forEach(item => {
                     setTimeout(() => {
-                        this.playInstrument(item.type);
-                        this.updateStatus(item.desc, 'success');
+                        if (this.demoTimer) {
+                            this.playInstrument(item.type);
+                            this.updateStatus(item.desc, 'playing');
+                        }
                     }, item.time);
                 });
                 
-                // 演示结束后自动播放鼓点
+                // 演示结束
                 setTimeout(() => {
-                    this.updateStatus('✅ 演示完成，开始鼓点循环', 'success');
-                    this.playDrumLoop();
+                    if (this.demoTimer) {
+                        this.updateStatus('✅ 演示完成！', 'success');
+                        document.getElementById('demoSequenceBtn').disabled = false;
+                        document.getElementById('stopDemoBtn').disabled = true;
+                    }
                 }, 16000);
             }
             
-            // 快速音效测试
-            quickTest() {
-                const instruments = ['gong', 'cymbal', 'woodblock', 'clapper', 'bell', 'drum'];
-                let index = 0;
+            // 停止演示
+            stopDemo() {
+                if (this.demoTimer) {
+                    // 清除所有定时器
+                    for (let i = 1; i < 99999; i++) window.clearInterval(i);
+                    this.demoTimer = null;
+                }
                 
-                const playNext = () => {
-                    if (index >= instruments.length) {
-                        this.updateStatus('✅ 音效测试完成', 'success');
-                        return;
-                    }
-                    
-                    const inst = instruments[index];
-                    const names = {
-                        gong: '锣声', cymbal: '镲声', woodblock: '木鱼',
-                        clapper: '响板', bell: '铃铛', drum: '小鼓'
-                    };
-                    
-                    this.updateStatus(`🎵 测试: ${names[inst]}`, 'success');
-                    this.playInstrument(inst);
-                    
-                    index++;
-                    setTimeout(playNext, 800);
-                };
+                this.stopAllSounds();
+                document.getElementById('demoSequenceBtn').disabled = false;
+                document.getElementById('stopDemoBtn').disabled = true;
                 
-                this.updateStatus('⚡ 开始快速音效测试...', 'loading');
-                playNext();
+                this.updateStatus('⏹️ 演示已停止', 'info');
             }
             
-            // 合成音效生成函数
+            // 停止所有声音
+            stopAllSounds() {
+                // 停止所有音源
+                this.activeSources.forEach(source => {
+                    try {
+                        source.stop();
+                    } catch (e) {}
+                });
+                this.activeSources.clear();
+                
+                // 停止鼓点
+                this.stopDrumLoop();
+                
+                // 停止自动模式
+                this.stopAutoMode();
+                
+                // 停止演示
+                this.stopDemo();
+                
+                // 清空播放列表
+                this.nowPlaying = [];
+                this.updateNowPlaying();
+                
+                this.updateStatus('🛑 所有声音已停止', 'stopped');
+            }
+            
+            // 重置系统
+            resetSystem() {
+                this.stopAllSounds();
+                
+                // 重置音量
+                this.instrumentVolume = 0.7;
+                this.drumVolume = 0.5;
+                this.isMuted = false;
+                
+                document.getElementById('instVolSlider').value = 70;
+                document.getElementById('drumVolSlider').value = 50;
+                document.getElementById('instVolValue').textContent = '70%';
+                document.getElementById('drumVolValue').textContent = '50%';
+                
+                // 更新按钮状态
+                this.updateButtonStates();
+                
+                this.updateStatus('🔄 系统已重置', 'success');
+            }
+            
+            // 静音/取消静音
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                
+                // 更新所有增益节点
+                this.activeSources.forEach(source => {
+                    // 这里简化处理，实际需要访问关联的gainNode
+                });
+                
+                if (this.drumGain) {
+                    this.drumGain.gain.value = this.isMuted ? this.mutedVolume : this.drumVolume;
+                }
+                
+                const muteBtn = document.getElementById('muteBtn');
+                if (this.isMuted) {
+                    muteBtn.innerHTML = '<span>🔊</span> 取消静音';
+                    this.updateStatus('🔇 系统已静音', 'info');
+                } else {
+                    muteBtn.innerHTML = '<span>🔇</span> 全部静音';
+                    this.updateStatus('🔊 系统取消静音', 'success');
+                }
+            }
+            
+            // 音量增加
+            increaseVolume() {
+                this.drumVolume = Math.min(1.0, this.drumVolume + 0.1);
+                const value = Math.round(this.drumVolume * 100);
+                document.getElementById('drumVolSlider').value = value;
+                document.getElementById('drumVolValue').textContent = value + '%';
+                
+                if (this.drumGain) {
+                    this.drumGain.gain.value = this.isMuted ? this.mutedVolume : this.drumVolume;
+                }
+                
+                this.updateStatus(`🔊 鼓点音量: ${value}%`, 'info');
+            }
+            
+            // 音量减少
+            decreaseVolume() {
+                this.drumVolume = Math.max(0.1, this.drumVolume - 0.1);
+                const value = Math.round(this.drumVolume * 100);
+                document.getElementById('drumVolSlider').value = value;
+                document.getElementById('drumVolValue').textContent = value + '%';
+                
+                if (this.drumGain) {
+                    this.drumGain.gain.value = this.isMuted ? this.mutedVolume : this.drumVolume;
+                }
+                
+                this.updateStatus(`🔉 鼓点音量: ${value}%`, 'info');
+            }
+            
+            // 更新按钮状态
+            updateButtonStates() {
+                const isLoaded = this.loadedFiles.drum;
+                
+                document.getElementById('playDrumBtn').disabled = !isLoaded;
+                document.getElementById('autoDrumBtn').disabled = !isLoaded;
+                document.getElementById('stopDrumBtn').disabled = true;
+                document.getElementById('pauseDrumBtn').disabled = true;
+                document.getElementById('stopAutoBtn').disabled = true;
+                document.getElementById('stopDemoBtn').disabled = true;
+            }
+            
+            // 添加到当前播放列表
+            addToNowPlaying(name) {
+                if (!this.nowPlaying.includes(name)) {
+                    this.nowPlaying.push(name);
+                    this.updateNowPlaying();
+                    
+                    // 3秒后自动移除
+                    setTimeout(() => {
+                        this.removeFromNowPlaying(name);
+                    }, 3000);
+                }
+            }
+            
+            // 从播放列表移除
+            removeFromNowPlaying(name) {
+                const index = this.nowPlaying.indexOf(name);
+                if (index > -1) {
+                    this.nowPlaying.splice(index, 1);
+                    this.updateNowPlaying();
+                }
+            }
+            
+            // 更新播放列表显示
+            updateNowPlaying() {
+                const listEl = document.getElementById('nowPlayingList');
+                if (this.nowPlaying.length === 0) {
+                    listEl.innerHTML = '无';
+                } else {
+                    listEl.innerHTML = this.nowPlaying.map(item => 
+                        `<span class="playing-item">${item}</span>`
+                    ).join('');
+                }
+            }
+            
+            // 更新状态显示
+            updateStatus(message, type = 'info') {
+                const statusEl = document.getElementById('status');
+                statusEl.textContent = message;
+                statusEl.className = `status ${type}`;
+            }
+            
+            updateFileStatus(message) {
+                document.getElementById('fileStatus').textContent = message;
+            }
+            
+            // 以下为合成音效生成函数（与之前相同）
+            generateBasicSounds() {
+                this.buffers.woodblock = this.createWoodblockSound();
+                this.buffers.clapper = this.createClapperSound();
+                this.buffers.bell = this.createBellSound();
+                this.buffers.drum = this.createDrumSound();
+            }
+            
+            generateFallbackSound(type) {
+                switch(type) {
+                    case 'gong': this.buffers.gong = this.createGongSound(); break;
+                    case 'cymbal': this.buffers.cymbal = this.createCymbalSound(); break;
+                }
+            }
+            
             createWoodblockSound() {
                 const duration = 0.3;
                 const buffer = this.audioContext.createBuffer(1, 
@@ -641,17 +979,13 @@
                     this.audioContext.sampleRate);
                 const data = buffer.getChannelData(0);
                 
-                // 两个快速脉冲模拟拍击
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / this.audioContext.sampleRate;
                     let sample = 0;
                     
-                    // 第一个脉冲
                     if (t < 0.02) {
                         sample = Math.sin(t * 1200 * Math.PI * 2) * (1 - t * 50);
-                    }
-                    // 第二个脉冲
-                    else if (t > 0.05 && t < 0.07) {
+                    } else if (t > 0.05 && t < 0.07) {
                         sample = Math.sin((t-0.05) * 800 * Math.PI * 2) * (1 - (t-0.05) * 50) * 0.6;
                     }
                     
@@ -671,11 +1005,9 @@
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / this.audioContext.sampleRate;
                     const envelope = Math.exp(-t * 2);
-                    
-                    // 铃铛的多重频率
-                    const freq1 = 1046.50; // C6
-                    const freq2 = 1318.51; // E6
-                    const freq3 = 1567.98; // G6
+                    const freq1 = 1046.50;
+                    const freq2 = 1318.51;
+                    const freq3 = 1567.98;
                     
                     const wave1 = Math.sin(t * freq1 * Math.PI * 2) * envelope * 0.4;
                     const wave2 = Math.sin(t * freq2 * Math.PI * 2) * envelope * 0.3;
@@ -697,12 +1029,8 @@
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / this.audioContext.sampleRate;
                     const envelope = Math.exp(-t * 12) * (1 - Math.exp(-t * 100));
-                    
-                    // 鼓的频率
                     const freq = 100 * Math.exp(-t * 5);
                     const wave = Math.sin(t * freq * Math.PI * 2) * envelope;
-                    
-                    // 噪声成分
                     const noise = t < 0.05 ? (Math.random() * 2 - 1) * (0.1 - t * 2) : 0;
                     
                     data[i] = (wave * 0.7 + noise * 0.3) * 0.8;
@@ -722,12 +1050,9 @@
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / this.audioContext.sampleRate;
                     const envelope = Math.exp(-t * 1.5) * (1 - Math.exp(-t * 50));
-                    
-                    // 锣的主要频率
                     const baseFreq = 220;
                     const wave = Math.sin(t * baseFreq * Math.PI * 2) * envelope;
                     
-                    // 泛音
                     const overtones = [2, 3, 4].reduce((sum, mult) => {
                         return sum + Math.sin(t * baseFreq * mult * Math.PI * 2) * envelope * (0.8 / mult);
                     }, 0);
@@ -751,12 +1076,8 @@
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / this.audioContext.sampleRate;
                     const envelope = Math.exp(-t * 4);
-                    
-                    // 高频金属声
                     const highFreq = 2000 + Math.sin(t * 10) * 500;
                     const wave = Math.sin(t * highFreq * Math.PI * 2) * envelope;
-                    
-                    // 金属噪声
                     const noise = t < 0.3 ? (Math.random() * 2 - 1) * envelope * 0.3 : 0;
                     
                     const sample = (wave * 0.7 + noise * 0.3) * 0.6;
@@ -766,21 +1087,10 @@
                 
                 return buffer;
             }
-            
-            // 更新状态显示
-            updateStatus(message, type = 'info') {
-                const statusEl = document.getElementById('status');
-                statusEl.textContent = message;
-                statusEl.className = `status ${type}`;
-            }
-            
-            updateFileStatus(message) {
-                document.getElementById('fileStatus').textContent = message;
-            }
         }
         
         // 初始化系统
-        const audioSystem = new SanJuBanAudioSystem();
+        const audioSystem = new CompleteAudioSystem();
         
         // 页面加载
         document.addEventListener('DOMContentLoaded', () => {
@@ -813,8 +1123,24 @@
                 audioSystem.stopDrumLoop();
             });
             
+            document.getElementById('pauseDrumBtn').addEventListener('click', () => {
+                audioSystem.pauseDrumLoop();
+            });
+            
             document.getElementById('autoDrumBtn').addEventListener('click', () => {
-                audioSystem.toggleAutoMode();
+                audioSystem.startAutoMode();
+            });
+            
+            document.getElementById('stopAutoBtn').addEventListener('click', () => {
+                audioSystem.stopAutoMode();
+            });
+            
+            document.getElementById('volumeUpBtn').addEventListener('click', () => {
+                audioSystem.increaseVolume();
+            });
+            
+            document.getElementById('volumeDownBtn').addEventListener('click', () => {
+                audioSystem.decreaseVolume();
             });
             
             // 乐器按钮
@@ -825,13 +1151,34 @@
                 });
             });
             
-            // 演示按钮
+            // 紧急控制按钮
+            document.getElementById('stopAllBtn').addEventListener('click', () => {
+                audioSystem.stopAllSounds();
+            });
+            
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                audioSystem.resetSystem();
+            });
+            
+            // 演示控制按钮
             document.getElementById('demoSequenceBtn').addEventListener('click', () => {
                 audioSystem.demoSequence();
             });
             
+            document.getElementById('stopDemoBtn').addEventListener('click', () => {
+                audioSystem.stopDemo();
+            });
+            
             document.getElementById('quickTestBtn').addEventListener('click', () => {
-                audioSystem.quickTest();
+                // 快速测试所有音效
+                const instruments = ['gong', 'cymbal', 'woodblock', 'clapper', 'bell', 'drum'];
+                instruments.forEach((inst, index) => {
+                    setTimeout(() => audioSystem.playInstrument(inst), index * 500);
+                });
+            });
+            
+            document.getElementById('muteBtn').addEventListener('click', () => {
+                audioSystem.toggleMute();
             });
             
             // 触摸解锁音频
