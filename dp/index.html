@@ -3,700 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三句半·六音打击乐</title>
+    <title>三句半打击乐</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Microsoft YaHei", sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            background: #1a1a2e;
             color: white;
             min-height: 100vh;
             padding: 20px;
-            touch-action: manipulation;
         }
         .container { max-width: 500px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 20px; padding: 15px; }
-        h1 {
-            font-size: 1.6rem;
-            margin-bottom: 10px;
-            color: #ffd166;
-        }
-        .subtitle {
-            color: #a0d2ff;
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
         
-        /* 状态指示 */
-        .status {
-            padding: 12px;
-            border-radius: 10px;
-            margin: 10px 0;
-            text-align: center;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.9rem;
-        }
-        
-        /* 乐器网格 - 6个按钮 */
-        .instrument-grid {
+        /* 只有6个按钮和一个音量控制 */
+        .instruments {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            gap: 10px;
             margin: 20px 0;
         }
         
-        .inst-btn {
-            padding: 25px 10px;
-            border-radius: 12px;
+        .btn {
+            padding: 30px 10px;
+            border-radius: 10px;
             border: none;
-            color: white;
-            font-size: 0.9rem;
+            font-size: 1rem;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            transition: all 0.1s;
-            position: relative;
-            overflow: hidden;
+            gap: 5px;
+            color: white;
         }
         
-        .inst-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.1);
-            opacity: 0;
-            transition: opacity 0.2s;
+        /* 按钮颜色 */
+        .gong { background: #ff6b35; }
+        .cymbal { background: #00b894; }
+        .drum { background: #6c5ce7; }
+        .woodblock { background: #0984e3; }
+        .clapper { background: #e84393; }
+        .bell { background: #fdcb6e; color: #333; }
+        
+        .btn.playing {
+            box-shadow: 0 0 0 3px white;
         }
         
-        .inst-btn:active::before {
-            opacity: 1;
-        }
-        
-        .inst-btn.playing {
-            animation: pulse 0.5s ease;
-            box-shadow: 0 0 0 4px currentColor;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-            100% { transform: scale(1); }
-        }
-        
-        /* 每个乐器的颜色和背景 */
-        .inst-btn.gong {
-            background: linear-gradient(135deg, #ff9e00, #ff5400);
-        }
-        .inst-btn.cymbal {
-            background: linear-gradient(135deg, #00ff88, #00cc6a); /* 更亮的绿色 */
-        }
-        .inst-btn.drum {
-            background: linear-gradient(135deg, #7209b7, #5608a0); /* 小鼓 - 紫色 */
-        }
-        .inst-btn.woodblock {
-            background: linear-gradient(135deg, #118ab2, #0a6c8f);
-        }
-        .inst-btn.clapper {
-            background: linear-gradient(135deg, #ef476f, #d43a5e);
-        }
-        .inst-btn.bell {
-            background: linear-gradient(135deg, #ffd166, #ffb92c);
-            color: #333;
-        }
-        
-        /* 播放/停止状态指示 */
-        .state-indicator {
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            background: rgba(0,0,0,0.3);
-            margin-top: 5px;
-            min-width: 40px;
-            text-align: center;
-        }
-        .state-indicator.playing {
-            background: rgba(255, 50, 50, 0.3);
-            color: #ff6666;
-        }
-        
-        /* 全局音量控制 */
-        .volume-simple {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* 音量控制 */
+        .volume {
             margin: 20px 0;
-            padding: 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-        }
-        .volume-slider {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            background: linear-gradient(90deg, #1a1a2e, #4361ee);
-            border-radius: 3px;
-        }
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #4361ee;
-            border: 2px solid white;
-            cursor: pointer;
-        }
-        
-        /* 双击提示 */
-        .double-tap-hint {
             text-align: center;
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-top: 10px;
+        }
+        .volume input {
+            width: 100%;
+            margin: 10px 0;
         }
         
-        @media (max-width: 600px) {
-            h1 { font-size: 1.4rem; }
-            .instrument-grid { 
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            .inst-btn { padding: 20px 8px; }
+        /* 状态提示 */
+        .hint {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🥁 三句半·六音打击乐</h1>
-            <p class="subtitle">点击播放 · 再次点击停止 · 镲声已加强</p>
-        </header>
+        <h2 style="text-align:center;">三句半打击乐</h2>
         
-        <!-- 状态指示 -->
-        <div class="status" id="status">
-            点击任意按钮开始，再次点击停止
-        </div>
-        
-        <!-- 乐器网格 - 6个乐器 -->
-        <div class="instrument-grid">
-            <button class="inst-btn gong" data-instrument="gong">
-                <span style="font-size: 1.8rem;">🥁</span>
-                大锣
-                <div class="state-indicator" id="gongState">准备</div>
+        <div class="instruments">
+            <button class="btn gong" data-sound="gong">
+                🥁<br>锣
             </button>
             
-            <button class="inst-btn cymbal" data-instrument="cymbal">
-                <span style="font-size: 1.8rem;">💥</span>
-                镲
-                <div class="state-indicator" id="cymbalState">准备</div>
+            <button class="btn cymbal" data-sound="cymbal">
+                💥<br>镲
             </button>
             
-            <button class="inst-btn drum" data-instrument="drum">
-                <span style="font-size: 1.8rem;">🎯</span>
-                小鼓
-                <div class="state-indicator" id="drumState">准备</div>
+            <button class="btn drum" data-sound="drum">
+                🎯<br>小鼓
             </button>
             
-            <button class="inst-btn woodblock" data-instrument="woodblock">
-                <span style="font-size: 1.8rem;">🎵</span>
-                木鱼
-                <div class="state-indicator" id="woodblockState">准备</div>
+            <button class="btn woodblock" data-sound="woodblock">
+                🎵<br>木鱼
             </button>
             
-            <button class="inst-btn clapper" data-instrument="clapper">
-                <span style="font-size: 1.8rem;">👏</span>
-                响板
-                <div class="state-indicator" id="clapperState">准备</div>
+            <button class="btn clapper" data-sound="clapper">
+                👏<br>响板
             </button>
             
-            <button class="inst-btn bell" data-instrument="bell">
-                <span style="font-size: 1.8rem;">🔔</span>
-                铃铛
-                <div class="state-indicator" id="bellState">准备</div>
+            <button class="btn bell" data-sound="bell">
+                🔔<br>铃铛
             </button>
         </div>
         
-        <!-- 全局音量控制 -->
-        <div class="volume-simple">
-            <span style="font-size: 1.2rem;">🔊</span>
-            <input type="range" min="30" max="100" value="80" class="volume-slider" id="volumeSlider">
-            <span id="volumeValue">80%</span>
+        <div class="volume">
+            音量: <span id="vol">80</span>%
+            <input type="range" id="volume" min="20" max="100" value="80">
         </div>
         
-        <!-- 使用说明 -->
-        <div class="status" style="font-size: 0.8rem; background: rgba(255,209,102,0.05);">
-            <strong>使用说明：</strong><br>
-            1. 点击乐器按钮播放音效<br>
-            2. 正在播放时再次点击可停止<br>
-            3. 镲声已特别加强音量<br>
-            4. 小鼓为短促音效（0.4秒）<br>
-            5. 双击屏幕可停止所有声音
-        </div>
-        
-        <div class="double-tap-hint">
-            💡 提示：双击屏幕任意位置可停止所有声音
+        <div class="hint">
+            点击播放，再次点击停止<br>
+            镲声音量已加强
         </div>
     </div>
 
     <script>
-        // 六音打击乐系统
-        class SixSoundAudioSystem {
+        class SimplePlayer {
             constructor() {
-                this.audioContext = null;
-                this.buffers = {};
-                this.activeSources = {}; // 存储每个乐器当前播放的音源
-                this.masterVolume = 0.8;
-                this.isInitialized = false;
+                this.audio = new (window.AudioContext || window.webkitAudioContext)();
+                this.sounds = {};
+                this.playing = {};
+                this.volume = 0.8;
                 
-                // 乐器基础音量系数（镲声特别加强）
-                this.instrumentVolumes = {
-                    gong: 1.0,      // 100%
-                    cymbal: 2.5,    // 250% - 特别加强！
-                    drum: 1.0,      // 100%
-                    woodblock: 1.0, // 100%
-                    clapper: 1.0,   // 100%
-                    bell: 1.0       // 100%
-                };
-                
-                // 加载状态
-                this.loadedFiles = {
-                    gong: false,
-                    cymbal: false
-                };
+                // 创建音效
+                this.createSounds();
             }
             
-            // 初始化
-            async initialize() {
-                try {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    this.updateStatus('音频系统就绪');
+            createSounds() {
+                // 基础音效
+                this.sounds.woodblock = this.makeSound(800, 0.3);
+                this.sounds.clapper = this.makeSound(1200, 0.2);
+                this.sounds.bell = this.makeBell();
+                this.sounds.drum = this.makeDrum();
+                this.sounds.gong = this.makeGong();
+                this.sounds.cymbal = this.makeCymbal(); // 镲声特别处理
+            }
+            
+            makeSound(freq, duration) {
+                const buffer = this.audio.createBuffer(1, 
+                    this.audio.sampleRate * duration, 
+                    this.audio.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < data.length; i++) {
+                    const t = i / this.audio.sampleRate;
+                    data[i] = Math.sin(t * freq * Math.PI * 2) * Math.exp(-t * 10);
+                }
+                
+                return buffer;
+            }
+            
+            makeBell() {
+                const duration = 1.5;
+                const buffer = this.audio.createBuffer(1, 
+                    this.audio.sampleRate * duration, 
+                    this.audio.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < data.length; i++) {
+                    const t = i / this.audio.sampleRate;
+                    const env = Math.exp(-t * 2);
+                    data[i] = (Math.sin(t * 1046 * Math.PI * 2) * 0.4 +
+                              Math.sin(t * 1318 * Math.PI * 2) * 0.3 +
+                              Math.sin(t * 1568 * Math.PI * 2) * 0.3) * env;
+                }
+                
+                return buffer;
+            }
+            
+            makeDrum() {
+                const duration = 0.4; // 短促小鼓
+                const buffer = this.audio.createBuffer(1, 
+                    this.audio.sampleRate * duration, 
+                    this.audio.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < data.length; i++) {
+                    const t = i / this.audio.sampleRate;
+                    const env = Math.exp(-t * 12) * (1 - Math.exp(-t * 100));
+                    const freq = 100 * Math.exp(-t * 5);
+                    data[i] = Math.sin(t * freq * Math.PI * 2) * env * 0.8;
+                }
+                
+                return buffer;
+            }
+            
+            makeGong() {
+                const duration = 3.0;
+                const buffer = this.audio.createBuffer(2, 
+                    this.audio.sampleRate * duration, 
+                    this.audio.sampleRate);
+                const left = buffer.getChannelData(0);
+                const right = buffer.getChannelData(1);
+                
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / this.audio.sampleRate;
+                    const env = Math.exp(-t * 1.5);
+                    const freq = 220;
+                    const wave = Math.sin(t * freq * Math.PI * 2) * env;
                     
-                    // 生成合成音效
-                    this.generateBasicSounds();
+                    left[i] = wave * 0.7;
+                    right[i] = wave * 0.6;
+                }
+                
+                return buffer;
+            }
+            
+            makeCymbal() {
+                const duration = 2.0;
+                const buffer = this.audio.createBuffer(2, 
+                    this.audio.sampleRate * duration, 
+                    this.audio.sampleRate);
+                const left = buffer.getChannelData(0);
+                const right = buffer.getChannelData(1);
+                
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / this.audio.sampleRate;
+                    const env = Math.exp(-t * 4);
+                    // 镲声：高频+噪声，音量加倍
+                    const high = Math.sin(t * 2000 * Math.PI * 2) * env;
+                    const noise = t < 0.3 ? (Math.random() * 2 - 1) * env * 0.5 : 0;
                     
-                    // 加载真实录音
-                    this.loadRealAudio();
-                    
-                    this.isInitialized = true;
-                    return true;
-                } catch (error) {
-                    this.updateStatus('音频初始化失败');
+                    const sample = (high + noise) * 1.5; // 音量加强
+                    left[i] = sample;
+                    right[i] = sample * 0.9;
+                }
+                
+                return buffer;
+            }
+            
+            play(soundName) {
+                // 如果正在播放，停止它
+                if (this.playing[soundName]) {
+                    this.playing[soundName].stop();
+                    delete this.playing[soundName];
                     return false;
                 }
-            }
-            
-            // 加载真实录音
-            async loadRealAudio() {
-                const files = [
-                    { name: 'gong', url: '9722.wav', desc: '锣声' },
-                    { name: 'cymbal', url: 'cymbal.wav', desc: '镲声' }
-                ];
                 
-                for (const file of files) {
-                    try {
-                        const response = await fetch(file.url);
-                        if (response.ok) {
-                            const arrayBuffer = await response.arrayBuffer();
-                            this.buffers[file.name] = await this.audioContext.decodeAudioData(arrayBuffer);
-                            this.loadedFiles[file.name] = true;
-                            console.log(`${file.desc} 加载成功`);
-                        } else {
-                            throw new Error('文件不存在');
-                        }
-                    } catch (error) {
-                        console.log(`${file.desc} 加载失败，使用合成音效`);
-                        this.generateFallbackSound(file.name);
-                    }
-                }
+                const buffer = this.sounds[soundName];
+                if (!buffer) return;
                 
-                this.updateStatus('所有音效准备就绪');
-            }
-            
-            // 播放/停止乐器音效
-            toggleInstrument(type) {
-                if (!this.isInitialized) {
-                    this.initialize().then(() => this.toggleInstrument(type));
-                    return;
-                }
-                
-                const btn = document.querySelector(`[data-instrument="${type}"]`);
-                const stateEl = document.getElementById(`${type}State`);
-                
-                // 如果正在播放，则停止
-                if (this.activeSources[type]) {
-                    this.stopInstrument(type);
-                    stateEl.textContent = '停止';
-                    stateEl.className = 'state-indicator';
-                    btn.classList.remove('playing');
-                    this.updateStatus(`${this.getInstrumentName(type)} 已停止`);
-                    return;
-                }
-                
-                // 否则开始播放
-                this.playInstrument(type);
-                stateEl.textContent = '播放中';
-                stateEl.className = 'state-indicator playing';
-                btn.classList.add('playing');
-                this.updateStatus(`播放: ${this.getInstrumentName(type)}`);
-            }
-            
-            // 播放音效
-            playInstrument(type) {
-                const buffer = this.buffers[type];
-                if (!buffer) {
-                    console.log(`音效未加载: ${type}`);
-                    return;
-                }
-                
-                const source = this.audioContext.createBufferSource();
+                const source = this.audio.createBufferSource();
                 source.buffer = buffer;
                 
-                // 增益控制 - 镲声特别加大音量
-                const gainNode = this.audioContext.createGain();
-                let volume = this.masterVolume * this.instrumentVolumes[type];
+                const gain = this.audio.createGain();
                 
-                // 确保镲声音量足够大
-                if (type === 'cymbal') {
-                    volume = Math.min(1.0, volume); // 最大不超过1.0
+                // 镲声特别加强
+                let vol = this.volume;
+                if (soundName === 'cymbal') {
+                    vol *= 2.0; // 镲声是其他音效的两倍音量
                 }
                 
-                gainNode.gain.value = volume;
+                gain.gain.value = vol;
                 
-                source.connect(gainNode);
-                gainNode.connect(this.audioContext.destination);
-                
-                // 存储音源
-                this.activeSources[type] = { source, gainNode };
-                
-                // 播放结束时的清理
-                source.onended = () => {
-                    delete this.activeSources[type];
-                    const stateEl = document.getElementById(`${type}State`);
-                    const btn = document.querySelector(`[data-instrument="${type}"]`);
-                    
-                    if (stateEl) {
-                        stateEl.textContent = '准备';
-                        stateEl.className = 'state-indicator';
-                    }
-                    if (btn) {
-                        btn.classList.remove('playing');
-                    }
-                };
+                source.connect(gain);
+                gain.connect(this.audio.destination);
                 
                 source.start();
+                this.playing[soundName] = source;
                 
-                // 如果是小鼓，0.4秒后自动停止（避免误触长播放）
-                if (type === 'drum') {
-                    setTimeout(() => {
-                        if (this.activeSources[type]) {
-                            this.stopInstrument(type);
-                        }
-                    }, 3000);
-                }
-            }
-            
-            // 停止音效
-            stopInstrument(type) {
-                const sound = this.activeSources[type];
-                if (sound && sound.source) {
-                    try {
-                        sound.source.stop();
-                    } catch (e) {}
-                    delete this.activeSources[type];
-                }
-            }
-            
-            // 停止所有音效
-            stopAll() {
-                Object.keys(this.activeSources).forEach(type => {
-                    this.stopInstrument(type);
-                });
-                
-                // 更新所有按钮状态
-                ['gong', 'cymbal', 'drum', 'woodblock', 'clapper', 'bell'].forEach(type => {
-                    const stateEl = document.getElementById(`${type}State`);
-                    const btn = document.querySelector(`[data-instrument="${type}"]`);
-                    
-                    if (stateEl) {
-                        stateEl.textContent = '准备';
-                        stateEl.className = 'state-indicator';
-                    }
-                    if (btn) {
-                        btn.classList.remove('playing');
-                    }
-                });
-                
-                this.updateStatus('所有音效已停止');
-            }
-            
-            // 设置主音量
-            setVolume(value) {
-                this.masterVolume = value / 100;
-                
-                // 更新正在播放的音效音量
-                Object.keys(this.activeSources).forEach(type => {
-                    const sound = this.activeSources[type];
-                    if (sound && sound.gainNode) {
-                        let volume = this.masterVolume * this.instrumentVolumes[type];
-                        
-                        // 确保镲声音量足够大
-                        if (type === 'cymbal') {
-                            volume = Math.min(1.0, volume);
-                        }
-                        
-                        sound.gainNode.gain.value = volume;
-                    }
-                });
-            }
-            
-            // 更新状态
-            updateStatus(message) {
-                document.getElementById('status').textContent = message;
-            }
-            
-            // 获取乐器名称
-            getInstrumentName(type) {
-                const names = {
-                    gong: '大锣',
-                    cymbal: '镲',
-                    drum: '小鼓',
-                    woodblock: '木鱼',
-                    clapper: '响板',
-                    bell: '铃铛'
+                source.onended = () => {
+                    delete this.playing[soundName];
                 };
-                return names[type] || type;
+                
+                return true;
             }
             
-            // 生成基本合成音效
-            generateBasicSounds() {
-                this.buffers.drum = this.createDrumSound();
-                this.buffers.woodblock = this.createWoodblockSound();
-                this.buffers.clapper = this.createClapperSound();
-                this.buffers.bell = this.createBellSound();
-            }
-            
-            // 生成备用音效
-            generateFallbackSound(type) {
-                if (type === 'gong') {
-                    this.buffers.gong = this.createGongSound();
-                } else if (type === 'cymbal') {
-                    this.buffers.cymbal = this.createCymbalSound();
-                }
-            }
-            
-            // 合成音效生成函数
-            createDrumSound() {
-                const duration = 5; // 短促的小鼓
-                const buffer = this.audioContext.createBuffer(2, 
-                    this.audioContext.sampleRate * duration, 
-                    this.audioContext.sampleRate);
-                const left = buffer.getChannelData(0);
-                const right = buffer.getChannelData(1);
-                
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / this.audioContext.sampleRate;
-                    const envelope = Math.exp(-t * 12) * (1 - Math.exp(-t * 100));
-                    
-                    // 鼓的频率
-                    const freq = 100 * Math.exp(-t * 5);
-                    const wave = Math.sin(t * freq * Math.PI * 2) * envelope;
-                    
-                    // 噪声成分
-                    const noise = t < 0.05 ? (Math.random() * 2 - 1) * (0.1 - t * 2) : 0;
-                    
-                    const sample = (wave * 0.7 + noise * 0.3) * 0.8;
-                    left[i] = sample;
-                    right[i] = sample * 0.9;
-                }
-                
-                return buffer;
-            }
-            
-            createWoodblockSound() {
-                const duration = 0.3;
-                const buffer = this.audioContext.createBuffer(1, 
-                    this.audioContext.sampleRate * duration, 
-                    this.audioContext.sampleRate);
-                const data = buffer.getChannelData(0);
-                
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / this.audioContext.sampleRate;
-                    const envelope = Math.exp(-t * 15);
-                    const freq = 880;
-                    data[i] = Math.sin(t * freq * Math.PI * 2) * envelope * 0.6;
-                }
-                
-                return buffer;
-            }
-            
-            createClapperSound() {
-                const duration = 0.2;
-                const buffer = this.audioContext.createBuffer(1, 
-                    this.audioContext.sampleRate * duration, 
-                    this.audioContext.sampleRate);
-                const data = buffer.getChannelData(0);
-                
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / this.audioContext.sampleRate;
-                    let sample = 0;
-                    
-                    if (t < 0.02) {
-                        sample = Math.sin(t * 1200 * Math.PI * 2) * (1 - t * 50);
-                    } else if (t > 0.05 && t < 0.07) {
-                        sample = Math.sin((t-0.05) * 800 * Math.PI * 2) * (1 - (t-0.05) * 50) * 0.6;
-                    }
-                    
-                    data[i] = sample;
-                }
-                
-                return buffer;
-            }
-            
-            createBellSound() {
-                const duration = 1.5;
-                const buffer = this.audioContext.createBuffer(1, 
-                    this.audioContext.sampleRate * duration, 
-                    this.audioContext.sampleRate);
-                const data = buffer.getChannelData(0);
-                
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / this.audioContext.sampleRate;
-                    const envelope = Math.exp(-t * 2);
-                    const freq1 = 1046.50;
-                    const freq2 = 1318.51;
-                    const freq3 = 1567.98;
-                    
-                    const wave1 = Math.sin(t * freq1 * Math.PI * 2) * envelope * 0.4;
-                    const wave2 = Math.sin(t * freq2 * Math.PI * 2) * envelope * 0.3;
-                    const wave3 = Math.sin(t * freq3 * Math.PI * 2) * envelope * 0.3;
-                    
-                    data[i] = wave1 + wave2 + wave3;
-                }
-                
-                return buffer;
-            }
-            
-            createGongSound() {
-                const duration = 3.0;
-                const buffer = this.audioContext.createBuffer(2, 
-                    this.audioContext.sampleRate * duration, 
-                    this.audioContext.sampleRate);
-                const left = buffer.getChannelData(0);
-                const right = buffer.getChannelData(1);
-                
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / this.audioContext.sampleRate;
-                    const envelope = Math.exp(-t * 1.5) * (1 - Math.exp(-t * 50));
-                    const baseFreq = 220;
-                    const wave = Math.sin(t * baseFreq * Math.PI * 2) * envelope;
-                    
-                    const overtones = [2, 3, 4].reduce((sum, mult) => {
-                        return sum + Math.sin(t * baseFreq * mult * Math.PI * 2) * envelope * (0.8 / mult);
-                    }, 0);
-                    
-                    const sample = (wave * 0.6 + overtones * 0.4) * 0.7;
-                    left[i] = sample;
-                    right[i] = sample * 0.9;
-                }
-                
-                return buffer;
-            }
-            
-            createCymbalSound() {
-                const duration = 2.0;
-                const buffer = this.audioContext.createBuffer(2, 
-                    this.audioContext.sampleRate * duration, 
-                    this.audioContext.sampleRate);
-                const left = buffer.getChannelData(0);
-                const right = buffer.getChannelData(1);
-                
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / this.audioContext.sampleRate;
-                    const envelope = Math.exp(-t * 4);
-                    const highFreq = 2000 + Math.sin(t * 10) * 500;
-                    const wave = Math.sin(t * highFreq * Math.PI * 2) * envelope;
-                    
-                    // 镲声特别加强 - 更多高频和噪声
-                    const noise = t < 0.3 ? (Math.random() * 2 - 1) * envelope * 0.7 : 0;
-                    
-                    // 额外的高频成分
-                    const highTone = Math.sin(t * 3000 * Math.PI * 2) * envelope * 0.4;
-                    
-                    const sample = (wave * 0.6 + noise * 0.3 + highTone * 0.1) * 1.2; // 整体音量大幅增加
-                    left[i] = sample;
-                    right[i] = sample * (0.8 + Math.sin(t) * 0.2);
-                }
-                
-                return buffer;
+            setVolume(value) {
+                this.volume = value / 100;
             }
         }
         
-        // 初始化系统
-        const audioSystem = new SixSoundAudioSystem();
+        // 初始化
+        const player = new SimplePlayer();
         
-        // 页面加载
-        document.addEventListener('DOMContentLoaded', () => {
-            // 初始化音频
-            audioSystem.initialize();
-            
-            // 音量控制
-            const volumeSlider = document.getElementById('volumeSlider');
-            const volumeValue = document.getElementById('volumeValue');
-            
-            volumeSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                volumeValue.textContent = value + '%';
-                audioSystem.setVolume(value);
-            });
-            
-            // 乐器按钮事件
-            document.querySelectorAll('.inst-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const instrument = this.dataset.instrument;
-                    audioSystem.toggleInstrument(instrument);
-                });
-            });
-            
-            // 双击停止所有音效
-            let lastTap = 0;
-            document.addEventListener('touchstart', function(e) {
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTap;
+        // 按钮点击
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const sound = this.dataset.sound;
+                const isPlaying = player.play(sound);
                 
-                if (tapLength < 300 && tapLength > 0) {
-                    // 双击停止所有
-                    audioSystem.stopAll();
-                    e.preventDefault();
-                }
-                
-                lastTap = currentTime;
-                
-                // 解锁音频
-                if (audioSystem.audioContext && audioSystem.audioContext.state === 'suspended') {
-                    audioSystem.audioContext.resume();
+                // 切换播放状态样式
+                if (isPlaying) {
+                    this.classList.add('playing');
+                } else {
+                    this.classList.remove('playing');
                 }
             });
-            
-            // 也支持双击停止（鼠标）
-            document.addEventListener('dblclick', function() {
-                audioSystem.stopAll();
-            });
-            
-            // 初始音量设置为85%确保镲声够大
-            volumeSlider.value = 85;
-            volumeValue.textContent = '85%';
-            audioSystem.setVolume(85);
         });
         
-        // 防止屏幕休眠
-        if ('wakeLock' in navigator) {
-            navigator.wakeLock.request('screen').catch(() => {});
-        }
+        // 音量控制
+        const volumeSlider = document.getElementById('volume');
+        const volumeText = document.getElementById('vol');
+        
+        volumeSlider.addEventListener('input', function() {
+            const value = this.value;
+            volumeText.textContent = value;
+            player.setVolume(value);
+        });
+        
+        // 解锁音频
+        document.addEventListener('click', function initAudio() {
+            if (player.audio.state === 'suspended') {
+                player.audio.resume();
+            }
+        }, { once: true });
     </script>
 </body>
 </html>
