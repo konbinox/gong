@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三句半·极简打击乐</title>
+    <title>三句半·六音打击乐</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -27,7 +27,7 @@
             opacity: 0.8;
         }
         
-        /* 简单状态指示 */
+        /* 状态指示 */
         .status {
             padding: 12px;
             border-radius: 10px;
@@ -38,7 +38,7 @@
             font-size: 0.9rem;
         }
         
-        /* 乐器网格 - 更简洁 */
+        /* 乐器网格 - 6个按钮 */
         .instrument-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -50,7 +50,6 @@
             padding: 25px 10px;
             border-radius: 12px;
             border: none;
-            background: rgba(0,0,0,0.4);
             color: white;
             font-size: 0.9rem;
             cursor: pointer;
@@ -90,22 +89,21 @@
             100% { transform: scale(1); }
         }
         
-        /* 每个乐器的颜色 */
+        /* 每个乐器的颜色和背景 */
         .inst-btn.gong {
             background: linear-gradient(135deg, #ff9e00, #ff5400);
-            color: white;
         }
         .inst-btn.cymbal {
-            background: linear-gradient(135deg, #06d6a0, #04a777);
-            color: white;
+            background: linear-gradient(135deg, #00ff88, #00cc6a); /* 更亮的绿色 */
+        }
+        .inst-btn.drum {
+            background: linear-gradient(135deg, #7209b7, #5608a0); /* 小鼓 - 紫色 */
         }
         .inst-btn.woodblock {
             background: linear-gradient(135deg, #118ab2, #0a6c8f);
-            color: white;
         }
         .inst-btn.clapper {
             background: linear-gradient(135deg, #ef476f, #d43a5e);
-            color: white;
         }
         .inst-btn.bell {
             background: linear-gradient(135deg, #ffd166, #ffb92c);
@@ -119,13 +117,15 @@
             border-radius: 10px;
             background: rgba(0,0,0,0.3);
             margin-top: 5px;
+            min-width: 40px;
+            text-align: center;
         }
         .state-indicator.playing {
             background: rgba(255, 50, 50, 0.3);
             color: #ff6666;
         }
         
-        /* 全局音量控制（仅一个） */
+        /* 全局音量控制 */
         .volume-simple {
             display: flex;
             align-items: center;
@@ -152,9 +152,20 @@
             cursor: pointer;
         }
         
+        /* 双击提示 */
+        .double-tap-hint {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 10px;
+        }
+        
         @media (max-width: 600px) {
             h1 { font-size: 1.4rem; }
-            .instrument-grid { grid-template-columns: repeat(2, 1fr); }
+            .instrument-grid { 
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
             .inst-btn { padding: 20px 8px; }
         }
     </style>
@@ -162,42 +173,48 @@
 <body>
     <div class="container">
         <header>
-            <h1>🥁 三句半·极简打击乐</h1>
-            <p class="subtitle">点击播放 · 再次点击停止 · 简单直接</p>
+            <h1>🥁 三句半·六音打击乐</h1>
+            <p class="subtitle">点击播放 · 再次点击停止 · 镲声已加强</p>
         </header>
         
         <!-- 状态指示 -->
         <div class="status" id="status">
-            点击任意按钮开始
+            点击任意按钮开始，再次点击停止
         </div>
         
-        <!-- 乐器网格 -->
+        <!-- 乐器网格 - 6个乐器 -->
         <div class="instrument-grid">
-            <button class="inst-btn gong" data-instrument="gong" data-duration="3">
+            <button class="inst-btn gong" data-instrument="gong">
                 <span style="font-size: 1.8rem;">🥁</span>
                 大锣
                 <div class="state-indicator" id="gongState">准备</div>
             </button>
             
-            <button class="inst-btn cymbal" data-instrument="cymbal" data-duration="2">
+            <button class="inst-btn cymbal" data-instrument="cymbal">
                 <span style="font-size: 1.8rem;">💥</span>
                 镲
                 <div class="state-indicator" id="cymbalState">准备</div>
             </button>
             
-            <button class="inst-btn woodblock" data-instrument="woodblock" data-duration="0.3">
+            <button class="inst-btn drum" data-instrument="drum">
+                <span style="font-size: 1.8rem;">🎯</span>
+                小鼓
+                <div class="state-indicator" id="drumState">准备</div>
+            </button>
+            
+            <button class="inst-btn woodblock" data-instrument="woodblock">
                 <span style="font-size: 1.8rem;">🎵</span>
                 木鱼
                 <div class="state-indicator" id="woodblockState">准备</div>
             </button>
             
-            <button class="inst-btn clapper" data-instrument="clapper" data-duration="0.2">
+            <button class="inst-btn clapper" data-instrument="clapper">
                 <span style="font-size: 1.8rem;">👏</span>
                 响板
                 <div class="state-indicator" id="clapperState">准备</div>
             </button>
             
-            <button class="inst-btn bell" data-instrument="bell" data-duration="1.5">
+            <button class="inst-btn bell" data-instrument="bell">
                 <span style="font-size: 1.8rem;">🔔</span>
                 铃铛
                 <div class="state-indicator" id="bellState">准备</div>
@@ -207,28 +224,44 @@
         <!-- 全局音量控制 -->
         <div class="volume-simple">
             <span style="font-size: 1.2rem;">🔊</span>
-            <input type="range" min="20" max="100" value="80" class="volume-slider" id="volumeSlider">
+            <input type="range" min="30" max="100" value="80" class="volume-slider" id="volumeSlider">
             <span id="volumeValue">80%</span>
         </div>
         
         <!-- 使用说明 -->
         <div class="status" style="font-size: 0.8rem; background: rgba(255,209,102,0.05);">
-            <strong>使用方法：</strong><br>
+            <strong>使用说明：</strong><br>
             1. 点击乐器按钮播放音效<br>
             2. 正在播放时再次点击可停止<br>
-            3. 每个音效有不同播放时长
+            3. 镲声已特别加强音量<br>
+            4. 小鼓为短促音效（0.4秒）<br>
+            5. 双击屏幕可停止所有声音
+        </div>
+        
+        <div class="double-tap-hint">
+            💡 提示：双击屏幕任意位置可停止所有声音
         </div>
     </div>
 
     <script>
-        // 极简版音频系统
-        class SimpleAudioSystem {
+        // 六音打击乐系统
+        class SixSoundAudioSystem {
             constructor() {
                 this.audioContext = null;
                 this.buffers = {};
                 this.activeSources = {}; // 存储每个乐器当前播放的音源
                 this.masterVolume = 0.8;
                 this.isInitialized = false;
+                
+                // 乐器基础音量系数（镲声特别加强）
+                this.instrumentVolumes = {
+                    gong: 1.0,      // 100%
+                    cymbal: 2.5,    // 250% - 特别加强！
+                    drum: 1.0,      // 100%
+                    woodblock: 1.0, // 100%
+                    clapper: 1.0,   // 100%
+                    bell: 1.0       // 100%
+                };
                 
                 // 加载状态
                 this.loadedFiles = {
@@ -315,17 +348,21 @@
             // 播放音效
             playInstrument(type) {
                 const buffer = this.buffers[type];
-                if (!buffer) return;
+                if (!buffer) {
+                    console.log(`音效未加载: ${type}`);
+                    return;
+                }
                 
                 const source = this.audioContext.createBufferSource();
                 source.buffer = buffer;
                 
                 // 增益控制 - 镲声特别加大音量
                 const gainNode = this.audioContext.createGain();
-                let volume = this.masterVolume;
+                let volume = this.masterVolume * this.instrumentVolumes[type];
                 
+                // 确保镲声音量足够大
                 if (type === 'cymbal') {
-                    volume *= 1.5; // 镲声音量加大50%
+                    volume = Math.min(1.0, volume); // 最大不超过1.0
                 }
                 
                 gainNode.gain.value = volume;
@@ -334,7 +371,7 @@
                 gainNode.connect(this.audioContext.destination);
                 
                 // 存储音源
-                this.activeSources[type] = source;
+                this.activeSources[type] = { source, gainNode };
                 
                 // 播放结束时的清理
                 source.onended = () => {
@@ -352,14 +389,23 @@
                 };
                 
                 source.start();
+                
+                // 如果是小鼓，0.4秒后自动停止（避免误触长播放）
+                if (type === 'drum') {
+                    setTimeout(() => {
+                        if (this.activeSources[type]) {
+                            this.stopInstrument(type);
+                        }
+                    }, 400);
+                }
             }
             
             // 停止音效
             stopInstrument(type) {
-                const source = this.activeSources[type];
-                if (source) {
+                const sound = this.activeSources[type];
+                if (sound && sound.source) {
                     try {
-                        source.stop();
+                        sound.source.stop();
                     } catch (e) {}
                     delete this.activeSources[type];
                 }
@@ -372,7 +418,7 @@
                 });
                 
                 // 更新所有按钮状态
-                ['gong', 'cymbal', 'woodblock', 'clapper', 'bell'].forEach(type => {
+                ['gong', 'cymbal', 'drum', 'woodblock', 'clapper', 'bell'].forEach(type => {
                     const stateEl = document.getElementById(`${type}State`);
                     const btn = document.querySelector(`[data-instrument="${type}"]`);
                     
@@ -391,9 +437,20 @@
             // 设置主音量
             setVolume(value) {
                 this.masterVolume = value / 100;
+                
                 // 更新正在播放的音效音量
                 Object.keys(this.activeSources).forEach(type => {
-                    // 这里简化处理，实际需要更新gainNode
+                    const sound = this.activeSources[type];
+                    if (sound && sound.gainNode) {
+                        let volume = this.masterVolume * this.instrumentVolumes[type];
+                        
+                        // 确保镲声音量足够大
+                        if (type === 'cymbal') {
+                            volume = Math.min(1.0, volume);
+                        }
+                        
+                        sound.gainNode.gain.value = volume;
+                    }
                 });
             }
             
@@ -407,6 +464,7 @@
                 const names = {
                     gong: '大锣',
                     cymbal: '镲',
+                    drum: '小鼓',
                     woodblock: '木鱼',
                     clapper: '响板',
                     bell: '铃铛'
@@ -416,6 +474,7 @@
             
             // 生成基本合成音效
             generateBasicSounds() {
+                this.buffers.drum = this.createDrumSound();
                 this.buffers.woodblock = this.createWoodblockSound();
                 this.buffers.clapper = this.createClapperSound();
                 this.buffers.bell = this.createBellSound();
@@ -431,6 +490,33 @@
             }
             
             // 合成音效生成函数
+            createDrumSound() {
+                const duration = 0.4; // 短促的小鼓
+                const buffer = this.audioContext.createBuffer(2, 
+                    this.audioContext.sampleRate * duration, 
+                    this.audioContext.sampleRate);
+                const left = buffer.getChannelData(0);
+                const right = buffer.getChannelData(1);
+                
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / this.audioContext.sampleRate;
+                    const envelope = Math.exp(-t * 12) * (1 - Math.exp(-t * 100));
+                    
+                    // 鼓的频率
+                    const freq = 100 * Math.exp(-t * 5);
+                    const wave = Math.sin(t * freq * Math.PI * 2) * envelope;
+                    
+                    // 噪声成分
+                    const noise = t < 0.05 ? (Math.random() * 2 - 1) * (0.1 - t * 2) : 0;
+                    
+                    const sample = (wave * 0.7 + noise * 0.3) * 0.8;
+                    left[i] = sample;
+                    right[i] = sample * 0.9;
+                }
+                
+                return buffer;
+            }
+            
             createWoodblockSound() {
                 const duration = 0.3;
                 const buffer = this.audioContext.createBuffer(1, 
@@ -535,10 +621,13 @@
                     const highFreq = 2000 + Math.sin(t * 10) * 500;
                     const wave = Math.sin(t * highFreq * Math.PI * 2) * envelope;
                     
-                    // 镲声特别加强高频和音量
-                    const noise = t < 0.3 ? (Math.random() * 2 - 1) * envelope * 0.5 : 0;
+                    // 镲声特别加强 - 更多高频和噪声
+                    const noise = t < 0.3 ? (Math.random() * 2 - 1) * envelope * 0.7 : 0;
                     
-                    const sample = (wave * 0.7 + noise * 0.3) * 0.9; // 整体音量增加
+                    // 额外的高频成分
+                    const highTone = Math.sin(t * 3000 * Math.PI * 2) * envelope * 0.4;
+                    
+                    const sample = (wave * 0.6 + noise * 0.3 + highTone * 0.1) * 1.2; // 整体音量大幅增加
                     left[i] = sample;
                     right[i] = sample * (0.8 + Math.sin(t) * 0.2);
                 }
@@ -548,7 +637,7 @@
         }
         
         // 初始化系统
-        const audioSystem = new SimpleAudioSystem();
+        const audioSystem = new SixSoundAudioSystem();
         
         // 页面加载
         document.addEventListener('DOMContentLoaded', () => {
@@ -573,7 +662,7 @@
                 });
             });
             
-            // 双击停止所有音效（备用功能）
+            // 双击停止所有音效
             let lastTap = 0;
             document.addEventListener('touchstart', function(e) {
                 const currentTime = new Date().getTime();
@@ -582,6 +671,7 @@
                 if (tapLength < 300 && tapLength > 0) {
                     // 双击停止所有
                     audioSystem.stopAll();
+                    e.preventDefault();
                 }
                 
                 lastTap = currentTime;
@@ -591,7 +681,22 @@
                     audioSystem.audioContext.resume();
                 }
             });
+            
+            // 也支持双击停止（鼠标）
+            document.addEventListener('dblclick', function() {
+                audioSystem.stopAll();
+            });
+            
+            // 初始音量设置为85%确保镲声够大
+            volumeSlider.value = 85;
+            volumeValue.textContent = '85%';
+            audioSystem.setVolume(85);
         });
+        
+        // 防止屏幕休眠
+        if ('wakeLock' in navigator) {
+            navigator.wakeLock.request('screen').catch(() => {});
+        }
     </script>
 </body>
 </html>
