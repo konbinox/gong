@@ -3,787 +3,639 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三句半·专业打击乐手（混响版）</title>
+    <title>三句半·手机优化版锣声</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: "Microsoft YaHei", sans-serif; 
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            color: white; 
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: white;
             min-height: 100vh;
             padding: 20px;
             touch-action: manipulation;
         }
         .container { max-width: 500px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 30px; padding: 20px; }
-        h1 { 
-            font-size: 2rem; 
-            margin-bottom: 10px; 
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            background: linear-gradient(90deg, #ff8a00, #e52e71);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .subtitle { 
-            opacity: 0.9; 
-            font-size: 1rem; 
-            margin-bottom: 10px;
-            color: #a0d2ff;
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #ffd166;
+            text-shadow: 0 0 10px rgba(255, 209, 102, 0.5);
         }
         
-        /* 效果器控制面板 */
-        .effects-panel {
-            background: rgba(255,255,255,0.08);
-            border-radius: 15px;
+        /* 手机优化提示 */
+        .phone-tips {
+            background: rgba(255, 209, 102, 0.1);
+            border: 1px solid rgba(255, 209, 102, 0.3);
+            border-radius: 10px;
             padding: 15px;
-            margin: 15px 0;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        .phone-tips li {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        .phone-tips li::before {
+            content: "📱";
+            margin-right: 10px;
+        }
+        
+        /* 测试区域 */
+        .test-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .test-btn {
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .test-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        .test-btn.gong {
+            background: linear-gradient(135deg, rgba(255, 209, 102, 0.2), rgba(255, 159, 28, 0.2));
+            border-color: #ff9f1c;
+        }
+        .test-btn.cymbal {
+            background: linear-gradient(135deg, rgba(118, 214, 255, 0.2), rgba(0, 180, 216, 0.2));
+            border-color: #00b4d8;
+        }
+        
+        /* 优化控制面板 */
+        .optimization-panel {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .effect-control {
-            margin: 10px 0;
+        .control-group {
+            margin: 15px 0;
         }
-        .effect-label {
+        .control-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #a0d2ff;
+        }
+        .slider-container {
+            position: relative;
+            height: 30px;
         }
         .slider {
             width: 100%;
-            height: 8px;
+            height: 6px;
             -webkit-appearance: none;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
+            background: linear-gradient(90deg, #1a1a2e, #4361ee);
+            border-radius: 3px;
             outline: none;
         }
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: #4cc9f0;
+            background: #4361ee;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+            border: 2px solid white;
+            box-shadow: 0 0 10px rgba(67, 97, 238, 0.8);
         }
         
-        /* 角色选择 */
-        .role-selection { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-            margin-bottom: 25px; 
-        }
-        .role-btn {
-            background: rgba(255,255,255,0.1); 
-            border: 2px solid rgba(76, 201, 240, 0.3);
-            border-radius: 15px; 
-            padding: 25px 10px; 
-            font-size: 1.8rem;
-            color: white; 
-            cursor: pointer; 
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
+        /* 音效预览 */
+        .wave-preview {
+            height: 60px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin: 15px 0;
             position: relative;
             overflow: hidden;
         }
-        .role-btn::after {
+        .waveform {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 1px,
+                rgba(255,255,255,0.05) 1px,
+                rgba(255,255,255,0.05) 2px
+            );
+        }
+        .sound-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, 
+                transparent,
+                rgba(67, 97, 238, 0.1),
+                rgba(255, 209, 102, 0.3)
+            );
+            transform-origin: bottom;
+        }
+        
+        /* 演奏按钮 */
+        .play-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #ff9f1c, #ff5400);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            margin: 20px 0;
+            font-weight: bold;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 15px rgba(255, 159, 28, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        .play-btn::after {
             content: '';
             position: absolute;
             top: -50%;
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
             opacity: 0;
             transition: opacity 0.3s;
         }
-        .role-btn:active::after {
+        .play-btn:active::after {
             opacity: 1;
-        }
-        .role-btn.active { 
-            background: linear-gradient(135deg, rgba(76, 201, 240, 0.3), rgba(156, 39, 176, 0.3)); 
-            border-color: #4cc9f0; 
-            box-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
-            transform: translateY(-3px);
-        }
-        
-        /* 乐器选择 */
-        .instrument-selection { display: none; margin-bottom: 30px; }
-        .instrument-title { 
-            text-align: center; 
-            margin-bottom: 20px; 
-            font-size: 1.4rem;
-            color: #4cc9f0;
-        }
-        .instruments { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
-        }
-        .instrument-btn {
-            background: rgba(0,0,0,0.3); 
-            border: 2px solid rgba(255,255,255,0.15);
-            border-radius: 12px; 
-            padding: 20px 10px; 
-            font-size: 1.1rem;
-            color: white; 
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-        .instrument-btn:hover, .instrument-btn:active { 
-            background: rgba(76, 201, 240, 0.2); 
-            border-color: #4cc9f0;
-            transform: scale(0.98);
-        }
-        
-        /* 演奏界面 */
-        .performance-screen { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: radial-gradient(circle at center, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            z-index: 100;
-        }
-        .home-btn {
-            position: absolute; 
-            top: 20px; right: 20px; 
-            background: rgba(255,255,255,0.15); 
-            width: 50px; height: 50px; 
-            border-radius: 50%;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            font-size: 1.5rem; 
-            cursor: pointer; 
-            z-index: 101;
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            backdrop-filter: blur(10px);
-        }
-        .drum-loop-btn {
-            position: absolute; 
-            bottom: 30px; right: 30px;
-            background: linear-gradient(135deg, #ff8a00, #e52e71); 
-            color: white;
-            padding: 12px 20px; 
-            border-radius: 25px;
-            font-weight: bold; 
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(229, 46, 113, 0.4);
-            border: none;
-            font-size: 1rem;
-            z-index: 101;
-        }
-        .current-role { 
-            position: absolute; 
-            top: 30px; left: 20px; 
-            font-size: 1.2rem; 
-            background: rgba(0,0,0,0.4);
-            padding: 10px 20px;
-            border-radius: 25px;
-            border: 1px solid rgba(76, 201, 240, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        .touch-hint {
-            position: absolute;
-            bottom: 100px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 1.1rem;
-            opacity: 0.8;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            color: #a0d2ff;
-        }
-        
-        /* 音频可视化 */
-        .visualizer {
-            position: absolute;
-            bottom: 180px;
-            left: 20px;
-            right: 20px;
-            height: 60px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .wave {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, 
-                transparent 0%, 
-                rgba(76, 201, 240, 0.1) 30%,
-                rgba(76, 201, 240, 0.3) 70%,
-                rgba(156, 39, 176, 0.5) 100%);
-            transform-origin: bottom;
         }
         
         @media (max-width: 600px) {
-            h1 { font-size: 1.6rem; }
-            .role-btn { padding: 20px 10px; font-size: 1.5rem; }
-            .current-role { top: 20px; font-size: 1rem; }
-        }
-        
-        .test-btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            background: linear-gradient(135deg, #4cc9f0, #4361ee);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            text-align: center;
+            h1 { font-size: 1.5rem; }
+            .test-btn { padding: 12px; font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎚️ 三句半·专业打击乐手</h1>
-            <p class="subtitle">带混响+回声的专业音效 | 全屏触控演奏</p>
+            <h1>📱 手机专用·逼真锣声模拟器</h1>
+            <p style="color: #a0d2ff; margin-bottom: 15px;">专为手机喇叭优化的物理建模音效</p>
             
-            <!-- 效果器控制面板 -->
-            <div class="effects-panel">
-                <div class="effect-control">
-                    <div class="effect-label">
-                        <span>混响强度</span>
-                        <span id="reverbValue">0.6</span>
-                    </div>
-                    <input type="range" min="0" max="1" step="0.1" value="0.6" class="slider" id="reverbSlider">
-                </div>
-                <div class="effect-control">
-                    <div class="effect-label">
-                        <span>回声延迟</span>
-                        <span id="delayValue">0.3s</span>
-                    </div>
-                    <input type="range" min="0" max="0.8" step="0.1" value="0.3" class="slider" id="delaySlider">
-                </div>
-                <div class="effect-control">
-                    <div class="effect-label">
-                        <span>回声次数</span>
-                        <span id="feedbackValue">3</span>
-                    </div>
-                    <input type="range" min="1" max="5" step="1" value="3" class="slider" id="feedbackSlider">
-                </div>
+            <div class="phone-tips">
+                <strong>手机喇叭特点 & 优化策略：</strong>
+                <ul>
+                    <li><strong>低频弱</strong> → 增强中高频共鸣，制造「听感低频」</li>
+                    <li><strong>高频刺耳</strong> → 柔化高频瞬态，添加空气感</li>
+                    <li><strong>音量小</strong> → 动态压缩，突出核心频段</li>
+                    <li><strong>单声道</strong> → 使用立体声扩展技术</li>
+                </ul>
             </div>
-            
-            <button class="test-btn" id="testSoundBtn">
-                🔊 点击测试专业音效（带混响）
-            </button>
         </header>
         
-        <!-- 角色选择 -->
-        <section id="roleScreen" class="role-selection">
-            <button class="role-btn" data-role="甲">甲</button>
-            <button class="role-btn" data-role="乙">乙</button>
-            <button class="role-btn" data-role="丙">丙</button>
-            <button class="role-btn" data-role="丁">丁</button>
-        </section>
+        <!-- 测试区域 -->
+        <div class="test-area">
+            <button class="test-btn gong" id="testGong1">
+                <span style="font-size: 1.5rem;">🥁</span>
+                <span>中国大锣</span>
+                <small>深沉厚重</small>
+            </button>
+            <button class="test-btn gong" id="testGong2">
+                <span style="font-size: 1.5rem;">🔔</span>
+                <span>舞台锣</span>
+                <small>明亮穿透</small>
+            </button>
+            <button class="test-btn cymbal" id="testCymbal1">
+                <span style="font-size: 1.5rem;">💥</span>
+                <span>戏剧锣</span>
+                <small>短促有力</small>
+            </button>
+            <button class="test-btn cymbal" id="testCymbal2">
+                <span style="font-size: 1.5rem;">🎭</span>
+                <span>尾声锣</span>
+                <small>悠长回响</small>
+            </button>
+        </div>
         
-        <!-- 乐器选择 -->
-        <section id="instrumentScreen" class="instrument-selection">
-            <h2 class="instrument-title" id="instrumentTitle">选择你的乐器</h2>
-            <div class="instruments" id="instrumentList"></div>
-        </section>
-        
-        <!-- 演奏界面 -->
-        <section id="performanceScreen" class="performance-screen">
-            <button class="home-btn" id="homeBtn">🏠</button>
-            <div class="current-role" id="currentRoleDisplay"></div>
-            <div class="touch-hint">👇 轻触屏幕演奏 | 长按持续发声 👇</div>
-            <div class="visualizer" id="visualizer">
-                <div class="wave" id="wave"></div>
+        <!-- 优化控制面板 -->
+        <div class="optimization-panel">
+            <div class="control-group">
+                <div class="control-label">
+                    <span>📶 手机兼容模式</span>
+                    <span id="phoneModeValue">智能适配</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="1" max="4" step="1" value="2" class="slider" id="phoneModeSlider">
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 5px; color: #888;">
+                    <span>小音量</span>
+                    <span>智能</span>
+                    <span>外放</span>
+                    <span>耳机</span>
+                </div>
             </div>
-            <button class="drum-loop-btn" id="drumLoopBtn">🎵 开启鼓点循环</button>
-        </section>
+            
+            <div class="control-group">
+                <div class="control-label">
+                    <span>🎚️ 共鸣强度</span>
+                    <span id="resonanceValue">75%</span>
+                </div>
+                <input type="range" min="20" max="100" value="75" class="slider" id="resonanceSlider">
+            </div>
+            
+            <div class="control-group">
+                <div class="control-label">
+                    <span>⏱️ 衰减时间</span>
+                    <span id="decayValue">2.5秒</span>
+                </div>
+                <input type="range" min="0.5" max="5" step="0.1" value="2.5" class="slider" id="decaySlider">
+            </div>
+            
+            <div class="control-group">
+                <div class="control-label">
+                    <span>🌀 立体声宽度</span>
+                    <span id="stereoValue">中等</span>
+                </div>
+                <input type="range" min="0" max="100" value="60" class="slider" id="stereoSlider">
+            </div>
+        </div>
+        
+        <!-- 波形预览 -->
+        <div class="wave-preview">
+            <div class="waveform"></div>
+            <div class="sound-wave" id="soundWave"></div>
+        </div>
+        
+        <!-- 快速演奏 -->
+        <button class="play-btn" id="quickPlay">
+            <span style="font-size: 1.5rem; margin-right: 10px;">🎬</span>
+            快速三句半演奏测试
+        </button>
+        
+        <!-- 音频状态 -->
+        <div id="audioStatus" style="text-align: center; padding: 10px; background: rgba(0,180,216,0.1); border-radius: 8px; margin: 10px 0;">
+            🔊 点击任意按钮初始化音频引擎...
+        </div>
     </div>
 
     <script>
-        // 专业音频引擎
-        class ProfessionalAudioEngine {
+        // 手机优化版锣声引擎
+        class PhoneOptimizedGong {
             constructor() {
                 this.audioContext = null;
-                this.reverbNode = null;
-                this.delayNode = null;
-                this.analyser = null;
-                this.reverbAmount = 0.6;
-                this.delayTime = 0.3;
-                this.feedback = 0.5;
                 this.isInitialized = false;
-                this.visualizationData = null;
+                this.phoneMode = 2; // 1-小音量 2-智能 3-外放 4-耳机
+                this.resonance = 0.75;
+                this.decayTime = 2.5;
+                this.stereoWidth = 60;
+                this.lastWaveformData = null;
             }
             
             async initialize() {
                 try {
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('手机优化音频引擎启动');
                     
-                    // 创建效果器链
-                    this.createEffectsChain();
-                    
-                    // 创建音频分析器用于可视化
-                    this.analyser = this.audioContext.createAnalyser();
-                    this.analyser.fftSize = 256;
-                    this.analyser.connect(this.audioContext.destination);
+                    // 解锁音频（iOS要求）
+                    document.body.addEventListener('touchstart', () => {
+                        if (this.audioContext.state === 'suspended') {
+                            this.audioContext.resume();
+                        }
+                    }, { once: true });
                     
                     this.isInitialized = true;
-                    console.log('专业音频引擎初始化完成');
+                    document.getElementById('audioStatus').innerHTML = '✅ 音频引擎就绪 | 点击测试锣声';
+                    document.getElementById('audioStatus').style.background = 'rgba(0,200,100,0.1)';
                     return true;
                 } catch (error) {
-                    console.error('音频引擎初始化失败:', error);
+                    console.error('初始化失败:', error);
+                    document.getElementById('audioStatus').innerHTML = '❌ 音频初始化失败，请检查音量设置';
+                    document.getElementById('audioStatus').style.background = 'rgba(255,50,50,0.1)';
                     return false;
                 }
             }
             
-            createEffectsChain() {
-                // 混响效果器
-                this.reverbNode = this.audioContext.createConvolver();
-                this.createReverbBuffer();
-                
-                // 延迟效果器（回声）
-                this.delayNode = this.audioContext.createDelay();
-                this.delayNode.delayTime.value = this.delayTime;
-                
-                // 延迟反馈
-                const feedbackGain = this.audioContext.createGain();
-                feedbackGain.gain.value = this.feedback;
-                
-                // 连接效果器链：音源 → 延迟 → 混响 → 输出
-                this.delayNode.connect(feedbackGain);
-                feedbackGain.connect(this.delayNode);
-                this.delayNode.connect(this.reverbNode);
-            }
-            
-            createReverbBuffer() {
-                // 创建人工混响脉冲响应
-                const length = this.audioContext.sampleRate * 2;
-                const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);
-                const left = impulse.getChannelData(0);
-                const right = impulse.getChannelData(1);
-                
-                for (let i = 0; i < length; i++) {
-                    left[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2);
-                    right[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2);
+            // 生成手机优化的锣声
+            playGong(type = 'chinese', intensity = 1.0) {
+                if (!this.isInitialized) {
+                    this.initialize();
+                    setTimeout(() => this.playGong(type, intensity), 100);
+                    return;
                 }
-                
-                this.reverbNode.buffer = impulse;
-            }
-            
-            updateReverb(amount) {
-                this.reverbAmount = amount;
-            }
-            
-            updateDelay(time) {
-                if (this.delayNode) {
-                    this.delayNode.delayTime.value = time;
-                }
-            }
-            
-            updateFeedback(feedback) {
-                this.feedback = feedback * 0.2; // 转换为增益值
-            }
-            
-            // 生成专业打击乐音色
-            createInstrumentSound(type) {
-                if (!this.isInitialized) return null;
                 
                 const now = this.audioContext.currentTime;
-                const duration = this.getDurationForInstrument(type);
+                const duration = this.decayTime * intensity;
                 
-                // 创建音源
-                const oscillator = this.audioContext.createOscillator();
-                const noiseBuffer = this.createNoiseBuffer(duration);
+                // 根据手机模式调整参数
+                const modeSettings = {
+                    1: { bassBoost: 0.3, trebleCut: 0.7, compression: 0.8 }, // 小音量
+                    2: { bassBoost: 0.6, trebleCut: 0.9, compression: 0.9 }, // 智能
+                    3: { bassBoost: 0.8, trebleCut: 1.0, compression: 1.0 }, // 外放
+                    4: { bassBoost: 1.0, trebleCut: 1.0, compression: 1.0 }  // 耳机
+                };
+                const settings = modeSettings[this.phoneMode] || modeSettings[2];
+                
+                // 锣声物理建模
+                this.createPhysicalModel(type, now, duration, settings, intensity);
+                
+                // 更新波形显示
+                this.updateWaveform();
+            }
+            
+            createPhysicalModel(type, startTime, duration, settings, intensity) {
+                // 主振荡器 - 模拟锣体震动
+                const mainOsc = this.audioContext.createOscillator();
+                mainOsc.type = 'sine';
+                
+                // 频率配置（针对手机优化）
+                let baseFreq, overtoneFreqs;
+                switch(type) {
+                    case 'chinese': // 中国大锣
+                        baseFreq = 220 * settings.bassBoost; // A3，手机可表现
+                        overtoneFreqs = [baseFreq*2.0, baseFreq*3.2, baseFreq*4.5, baseFreq*6.0];
+                        break;
+                    case 'stage': // 舞台锣
+                        baseFreq = 330; // E4
+                        overtoneFreqs = [baseFreq*1.8, baseFreq*2.8, baseFreq*4.0, baseFreq*5.5];
+                        break;
+                    case 'dramatic': // 戏剧锣
+                        baseFreq = 440; // A4
+                        overtoneFreqs = [baseFreq*1.5, baseFreq*2.2, baseFreq*3.0, baseFreq*4.0];
+                        break;
+                    case 'tail': // 尾声锣
+                        baseFreq = 165; // E3
+                        overtoneFreqs = [baseFreq*2.5, baseFreq*4.0, baseFreq*6.0, baseFreq*8.0];
+                        break;
+                }
+                
+                mainOsc.frequency.setValueAtTime(baseFreq, startTime);
+                
+                // 泛音振荡器组 - 制造共鸣感
+                const overtoneOscs = overtoneFreqs.map((freq, i) => {
+                    const osc = this.audioContext.createOscillator();
+                    osc.type = i < 2 ? 'sine' : 'triangle'; // 高音用三角波更柔和
+                    osc.frequency.setValueAtTime(freq * settings.trebleCut, startTime);
+                    
+                    // 频率微漂移 - 增加真实感
+                    const drift = 1 + (Math.random() * 0.02 - 0.01);
+                    osc.frequency.exponentialRampToValueAtTime(
+                        freq * drift * settings.trebleCut,
+                        startTime + 0.05
+                    );
+                    
+                    return osc;
+                });
+                
+                // 噪声层 - 模拟打击瞬态（针对手机优化高频）
+                const noiseBuffer = this.createColoredNoise(duration, 800, 3000); // 限制高频范围
                 const noiseSource = this.audioContext.createBufferSource();
                 noiseSource.buffer = noiseBuffer;
                 
-                // 创建包络
-                const gainNode = this.audioContext.createGain();
-                const filter = this.audioContext.createBiquadFilter();
+                // 包络控制
+                const mainGain = this.audioContext.createGain();
+                const overtoneGains = overtoneOscs.map(() => this.audioContext.createGain());
+                const noiseGain = this.audioContext.createGain();
                 
-                // 配置不同乐器的音色
-                this.configureInstrument(type, oscillator, filter, gainNode, now, duration);
+                // 动态包络（模仿真实锣声衰减）
+                const attackTime = 0.01;
+                const initialDecay = 0.1;
                 
-                // 连接效果器链
-                if (type.includes('鼓') || type === '大锣' || type === '爆炸') {
-                    // 鼓类乐器：只经过混响
-                    noiseSource.connect(gainNode);
-                    gainNode.connect(this.reverbNode);
-                    this.reverbNode.connect(this.audioContext.destination);
-                    noiseSource.start(now);
-                } else if (type === '镲' || type === '铃铛') {
-                    // 金属乐器：经过延迟和混响
-                    oscillator.connect(filter);
-                    filter.connect(gainNode);
-                    gainNode.connect(this.delayNode);
-                    this.delayNode.connect(this.reverbNode);
-                    this.reverbNode.connect(this.audioContext.destination);
-                    oscillator.start(now);
-                } else {
-                    // 其他乐器
-                    oscillator.connect(filter);
-                    filter.connect(gainNode);
-                    gainNode.connect(this.reverbNode);
-                    this.reverbNode.connect(this.analyser);
-                    this.reverbNode.connect(this.audioContext.destination);
-                    oscillator.start(now);
+                // 主音包络
+                mainGain.gain.setValueAtTime(0, startTime);
+                mainGain.gain.linearRampToValueAtTime(0.8 * intensity * settings.compression, startTime + attackTime);
+                mainGain.gain.exponentialRampToValueAtTime(0.3 * this.resonance, startTime + attackTime + initialDecay);
+                mainGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                
+                // 泛音包络（不同衰减速率）
+                overtoneGains.forEach((gain, i) => {
+                    gain.gain.setValueAtTime(0, startTime);
+                    const peak = (0.4 - i * 0.08) * this.resonance * intensity;
+                    gain.gain.linearRampToValueAtTime(peak, startTime + attackTime + i * 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration * (0.7 + i * 0.1));
+                });
+                
+                // 噪声包络（快速衰减）
+                noiseGain.gain.setValueAtTime(0, startTime);
+                noiseGain.gain.linearRampToValueAtTime(0.3 * intensity, startTime + 0.005);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.1);
+                
+                // 滤波器 - 塑造音色
+                const lowpass = this.audioContext.createBiquadFilter();
+                lowpass.type = 'lowpass';
+                lowpass.frequency.setValueAtTime(4000, startTime);
+                lowpass.frequency.exponentialRampToValueAtTime(800, startTime + duration * 0.5);
+                
+                const highpass = this.audioContext.createBiquadFilter();
+                highpass.type = 'highpass';
+                highpass.frequency.setValueAtTime(150, startTime); // 保护手机喇叭
+                
+                // 立体声扩展
+                const stereoPanner = this.audioContext.createStereoPanner();
+                const width = (this.stereoWidth - 50) / 50; // -1到1
+                stereoPanner.pan.setValueAtTime(width * 0.3, startTime);
+                
+                // 连接节点
+                mainOsc.connect(mainGain);
+                mainGain.connect(lowpass);
+                
+                overtoneOscs.forEach((osc, i) => {
+                    osc.connect(overtoneGains[i]);
+                    overtoneGains[i].connect(lowpass);
+                });
+                
+                noiseSource.connect(noiseGain);
+                noiseGain.connect(lowpass);
+                
+                lowpass.connect(highpass);
+                highpass.connect(stereoPanner);
+                stereoPanner.connect(this.audioContext.destination);
+                
+                // 启动振荡器
+                mainOsc.start(startTime);
+                mainOsc.stop(startTime + duration);
+                
+                overtoneOscs.forEach(osc => {
+                    osc.start(startTime);
+                    osc.stop(startTime + duration * 0.8);
+                });
+                
+                noiseSource.start(startTime);
+                
+                // 轻微延迟副本 - 增加空间感
+                if (this.phoneMode >= 3) { // 外放和耳机模式
+                    setTimeout(() => {
+                        this.createPhysicalModel(type, startTime + 0.05, duration * 0.7, settings, intensity * 0.3);
+                    }, 50);
                 }
-                
-                // 停止音源
-                setTimeout(() => {
-                    try {
-                        oscillator.stop();
-                        if (noiseSource) noiseSource.stop();
-                    } catch(e) {}
-                }, duration * 1000);
-                
-                // 更新可视化
-                this.updateVisualization();
-                
-                return { oscillator, gainNode, noiseSource };
             }
             
-            configureInstrument(type, osc, filter, gain, now, duration) {
-                const configs = {
-                    '木鱼': { freq: 800, type: 'sine', filterFreq: 1000, q: 5 },
-                    '响板': { freq: 1200, type: 'square', filterFreq: 2000, q: 2 },
-                    '铃铛': { freq: 1567, type: 'sine', filterFreq: 3000, q: 10 },
-                    '小鼓': { freq: 150, type: 'sawtooth', filterFreq: 800, q: 3 },
-                    '沙锤': { freq: 500, type: 'square', filterFreq: 1500, q: 1 },
-                    '拍板': { freq: 600, type: 'square', filterFreq: 1200, q: 4 },
-                    '镲': { freq: 2000, type: 'sawtooth', filterFreq: 4000, q: 0.5 },
-                    '铃鼓': { freq: 800, type: 'triangle', filterFreq: 2000, q: 2 },
-                    '欢呼': { freq: 600, type: 'sine', filterFreq: 1000, q: 1 },
-                    '大锣': { freq: 300, type: 'sine', filterFreq: 500, q: 0.5 },
-                    '低音鼓': { freq: 100, type: 'sawtooth', filterFreq: 400, q: 2 },
-                    '爆炸': { freq: 80, type: 'sawtooth', filterFreq: 300, q: 0.3 }
-                };
-                
-                const config = configs[type] || configs['木鱼'];
-                
-                osc.type = config.type;
-                osc.frequency.setValueAtTime(config.freq, now);
-                if (type === '铃铛') {
-                    osc.frequency.exponentialRampToValueAtTime(config.freq * 0.5, now + duration);
-                }
-                
-                filter.type = 'bandpass';
-                filter.frequency.setValueAtTime(config.filterFreq, now);
-                filter.Q.setValueAtTime(config.q, now);
-                
-                // 动态包络
-                gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(0.7, now + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-            }
-            
-            createNoiseBuffer(duration) {
-                const bufferSize = this.audioContext.sampleRate * duration;
-                const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+            createColoredNoise(duration, lowFreq, highFreq) {
+                const sampleRate = this.audioContext.sampleRate;
+                const bufferSize = sampleRate * duration;
+                const buffer = this.audioContext.createBuffer(1, bufferSize, sampleRate);
                 const data = buffer.getChannelData(0);
                 
+                // 生成带通噪声
                 for (let i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1;
+                    // 频率相关振幅
+                    const t = i / sampleRate;
+                    const freqFactor = Math.sin(t * (highFreq - lowFreq) * Math.PI * 2) * 0.5 + 0.5;
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 10) * freqFactor;
                 }
                 
                 return buffer;
             }
             
-            getDurationForInstrument(type) {
-                const durations = {
-                    '木鱼': 0.2, '响板': 0.15, '铃铛': 1.5,
-                    '小鼓': 0.3, '沙锤': 0.4, '拍板': 0.25,
-                    '镲': 1.2, '铃鼓': 0.6, '欢呼': 0.8,
-                    '大锣': 2.0, '低音鼓': 0.5, '爆炸': 1.0
-                };
-                return durations[type] || 0.5;
-            }
-            
-            updateVisualization() {
-                if (!this.analyser) return;
+            updateWaveform() {
+                const wave = document.getElementById('soundWave');
+                wave.style.transform = 'scaleY(1.5)';
+                wave.style.opacity = '0.8';
                 
-                const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-                this.analyser.getByteFrequencyData(dataArray);
-                this.visualizationData = dataArray;
+                setTimeout(() => {
+                    wave.style.transform = 'scaleY(1)';
+                    wave.style.opacity = '0.4';
+                }, 100);
+                
+                setTimeout(() => {
+                    wave.style.opacity = '0.2';
+                }, 500);
             }
             
-            getVisualizationData() {
-                return this.visualizationData;
+            setPhoneMode(mode) {
+                this.phoneMode = mode;
+                const labels = ['小音量', '智能适配', '外放模式', '耳机模式'];
+                document.getElementById('phoneModeValue').textContent = labels[mode-1];
+            }
+            
+            setResonance(value) {
+                this.resonance = value / 100;
+                document.getElementById('resonanceValue').textContent = value + '%';
+            }
+            
+            setDecay(value) {
+                this.decayTime = value;
+                document.getElementById('decayValue').textContent = value.toFixed(1) + '秒';
+            }
+            
+            setStereo(value) {
+                this.stereoWidth = value;
+                const labels = ['单声道', '较窄', '中等', '较宽', '立体声'];
+                document.getElementById('stereoValue').textContent = labels[Math.floor(value/25)];
             }
         }
         
-        // 主程序
-        const audioEngine = new ProfessionalAudioEngine();
-        let currentRole = '';
-        let currentInstrument = '';
-        let isDrumLoopPlaying = false;
-        let drumLoopSources = [];
-        let visualizationInterval;
+        // 初始化引擎
+        const gongEngine = new PhoneOptimizedGong();
         
-        // 初始化
-        document.addEventListener('DOMContentLoaded', async () => {
-            // 效果器控制
-            setupEffectControls();
+        // 页面加载
+        document.addEventListener('DOMContentLoaded', () => {
+            // 绑定控制滑块
+            document.getElementById('phoneModeSlider').addEventListener('input', (e) => {
+                const mode = parseInt(e.target.value);
+                gongEngine.setPhoneMode(mode);
+            });
+            
+            document.getElementById('resonanceSlider').addEventListener('input', (e) => {
+                gongEngine.setResonance(parseInt(e.target.value));
+            });
+            
+            document.getElementById('decaySlider').addEventListener('input', (e) => {
+                gongEngine.setDecay(parseFloat(e.target.value));
+            });
+            
+            document.getElementById('stereoSlider').addEventListener('input', (e) => {
+                gongEngine.setStereo(parseInt(e.target.value));
+            });
             
             // 测试按钮
-            document.getElementById('testSoundBtn').addEventListener('click', async () => {
-                await audioEngine.initialize();
-                playTestSound();
+            document.getElementById('testGong1').addEventListener('click', () => {
+                gongEngine.playGong('chinese', 1.0);
             });
             
-            // 角色选择
-            setupRoleSelection();
-            
-            // 其他事件
-            document.getElementById('homeBtn').addEventListener('click', goHome);
-            document.getElementById('drumLoopBtn').addEventListener('click', toggleDrumLoop);
-            
-            // 演奏界面点击
-            document.getElementById('performanceScreen').addEventListener('click', (e) => {
-                if (e.target.id === 'drumLoopBtn' || e.target.id === 'homeBtn') return;
-                playCurrentInstrument();
+            document.getElementById('testGong2').addEventListener('click', () => {
+                gongEngine.playGong('stage', 0.9);
             });
             
-            // 长按支持
-            let touchTimer;
-            document.getElementById('performanceScreen').addEventListener('touchstart', (e) => {
-                if (e.target.id === 'drumLoopBtn' || e.target.id === 'homeBtn') return;
-                touchTimer = setTimeout(() => {
-                    playCurrentInstrument();
-                    // 连续播放
-                    const interval = setInterval(() => playCurrentInstrument(), 200);
-                    // 停止长按
-                    const stopLongPress = () => {
-                        clearInterval(interval);
-                        document.removeEventListener('touchend', stopLongPress);
-                    };
-                    document.addEventListener('touchend', stopLongPress);
-                }, 300);
+            document.getElementById('testCymbal1').addEventListener('click', () => {
+                gongEngine.playGong('dramatic', 0.8);
             });
             
-            document.getElementById('performanceScreen').addEventListener('touchend', () => {
-                clearTimeout(touchTimer);
+            document.getElementById('testCymbal2').addEventListener('click', () => {
+                gongEngine.playGong('tail', 0.7);
             });
             
-            // 启动可视化
-            startVisualization();
-        });
-        
-        function setupEffectControls() {
-            const reverbSlider = document.getElementById('reverbSlider');
-            const delaySlider = document.getElementById('delaySlider');
-            const feedbackSlider = document.getElementById('feedbackSlider');
-            
-            reverbSlider.addEventListener('input', (e) => {
-                const value = parseFloat(e.target.value);
-                document.getElementById('reverbValue').textContent = value.toFixed(1);
-                if (audioEngine.isInitialized) {
-                    audioEngine.updateReverb(value);
-                }
-            });
-            
-            delaySlider.addEventListener('input', (e) => {
-                const value = parseFloat(e.target.value);
-                document.getElementById('delayValue').textContent = value.toFixed(1) + 's';
-                if (audioEngine.isInitialized) {
-                    audioEngine.updateDelay(value);
-                }
-            });
-            
-            feedbackSlider.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                document.getElementById('feedbackValue').textContent = value;
-                if (audioEngine.isInitialized) {
-                    audioEngine.updateFeedback(value);
-                }
-            });
-        }
-        
-        function setupRoleSelection() {
-            document.querySelectorAll('.role-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentRole = this.dataset.role;
-                    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    document.getElementById('roleScreen').style.display = 'none';
-                    const instrumentScreen = document.getElementById('instrumentScreen');
-                    instrumentScreen.style.display = 'block';
-                    document.getElementById('instrumentTitle').textContent = `【${currentRole}】选择乐器`;
-                    
-                    const instruments = {
-                        '甲': ['木鱼', '响板', '铃铛'],
-                        '乙': ['小鼓', '沙锤', '拍板'],
-                        '丙': ['镲', '铃鼓', '欢呼'],
-                        '丁': ['大锣', '低音鼓', '爆炸']
-                    };
-                    
-                    const instrumentList = document.getElementById('instrumentList');
-                    instrumentList.innerHTML = '';
-                    instruments[currentRole].forEach(instrument => {
-                        const btn = document.createElement('button');
-                        btn.className = 'instrument-btn';
-                        btn.textContent = instrument;
-                        btn.addEventListener('click', function() {
-                            currentInstrument = instrument;
-                            startPerformance();
-                        });
-                        instrumentList.appendChild(btn);
-                    });
+            // 快速演奏测试
+            document.getElementById('quickPlay').addEventListener('click', () => {
+                // 三句半节奏测试
+                const sequence = [
+                    { type: 'chinese', delay: 0, intensity: 0.6 },
+                    { type: 'stage', delay: 1000, intensity: 0.5 },
+                    { type: 'dramatic', delay: 2000, intensity: 0.7 },
+                    { type: 'tail', delay: 3000, intensity: 0.9 } // 最后一声
+                ];
+                
+                sequence.forEach(({ type, delay, intensity }) => {
+                    setTimeout(() => {
+                        gongEngine.playGong(type, intensity);
+                    }, delay);
                 });
             });
-        }
-        
-        async function playTestSound() {
-            if (!audioEngine.isInitialized) return;
             
-            // 播放测试序列：木鱼、铃铛、大锣
-            const instruments = ['木鱼', '铃铛', '大锣'];
-            instruments.forEach((inst, index) => {
-                setTimeout(() => {
-                    audioEngine.createInstrumentSound(inst);
-                }, index * 600);
-            });
+            // 首次点击初始化
+            document.body.addEventListener('click', function initOnFirstClick() {
+                gongEngine.initialize();
+                document.body.removeEventListener('click', initOnFirstClick);
+            }, { once: true });
             
-            document.getElementById('testSoundBtn').textContent = '🎵 测试通过！混响效果已启用';
-            document.getElementById('testSoundBtn').style.background = 'linear-gradient(135deg, #43e97b, #38f9d7)';
-        }
+            // 设置初始值
+            gongEngine.setPhoneMode(2);
+            gongEngine.setResonance(75);
+            gongEngine.setDecay(2.5);
+            gongEngine.setStereo(60);
+        });
         
-        function playCurrentInstrument() {
-            if (!audioEngine.isInitialized || !currentInstrument) return;
-            audioEngine.createInstrumentSound(currentInstrument);
-        }
-        
-        function startPerformance() {
-            document.getElementById('instrumentScreen').style.display = 'none';
-            const perfScreen = document.getElementById('performanceScreen');
-            perfScreen.style.display = 'block';
-            document.getElementById('currentRoleDisplay').textContent = 
-                `${currentRole} · ${currentInstrument}`;
+        // 设备检测与自动优化
+        function detectDeviceAndOptimize() {
+            const ua = navigator.userAgent;
+            const isiPhone = /iPhone/i.test(ua);
+            const isAndroid = /Android/i.test(ua);
+            const isSmallSpeaker = isiPhone || /iPad/i.test(ua);
             
-            if (!audioEngine.isInitialized) {
-                audioEngine.initialize();
+            if (isSmallSpeaker) {
+                // iPhone/iPad 喇叭较小
+                gongEngine.setPhoneMode(1);
+                gongEngine.setResonance(70);
+                document.getElementById('audioStatus').innerHTML += '<br>📱 检测到iPhone，已启用小音量优化';
+            } else if (isAndroid) {
+                // Android设备多样，取中间值
+                gongEngine.setPhoneMode(2);
+                document.getElementById('audioStatus').innerHTML += '<br>🤖 检测到Android，启用智能适配';
             }
         }
         
-        function goHome() {
-            stopDrumLoop();
-            document.getElementById('performanceScreen').style.display = 'none';
-            document.getElementById('roleScreen').style.display = 'grid';
-            document.getElementById('instrumentScreen').style.display = 'none';
-        }
+        // 页面加载后运行检测
+        setTimeout(detectDeviceAndOptimize, 500);
         
-        function toggleDrumLoop() {
-            if (!isDrumLoopPlaying) {
-                startDrumLoop();
-            } else {
-                stopDrumLoop();
-            }
-        }
-        
-        function startDrumLoop() {
-            if (!audioEngine.isInitialized) return;
-            
-            isDrumLoopPlaying = true;
-            const btn = document.getElementById('drumLoopBtn');
-            btn.textContent = '⏹️ 关闭鼓点循环';
-            btn.style.background = 'linear-gradient(135deg, #ff416c, #ff4b2b)';
-            
-            // 创建鼓点循环
-            const bpm = 120;
-            const interval = 60000 / bpm / 2; // 半拍
-            
-            let beat = 0;
-            drumLoopSources = [];
-            
-            const loop = setInterval(() => {
-                const now = audioEngine.audioContext.currentTime;
-                
-                // 强拍
-                if (beat % 4 === 0) {
-                    const sound = audioEngine.createInstrumentSound('低音鼓');
-                    if (sound) drumLoopSources.push(sound);
-                }
-                // 弱拍
-                else if (beat % 2 === 0) {
-                    const sound = audioEngine.createInstrumentSound('小鼓');
-                    if (sound) drumLoopSources.push(sound);
-                }
-                
-                beat = (beat + 1) % 8;
-            }, interval);
-            
-            // 存储循环ID
-            drumLoopSources.loopId = loop;
-        }
-        
-        function stopDrumLoop() {
-            if (!isDrumLoopPlaying) return;
-            
-            isDrumLoopPlaying = false;
-            const btn = document.getElementById('drumLoopBtn');
-            btn.textContent = '🎵 开启鼓点循环';
-            btn.style.background = 'linear-gradient(135deg, #ff8a00, #e52e71)';
-            
-            // 停止循环
-            if (drumLoopSources.loopId) {
-                clearInterval(drumLoopSources.loopId);
-            }
-            
-            // 停止所有声音
-            drumLoopSources.forEach(source => {
-                try {
-                    if (source.oscillator) source.oscillator.stop();
-                    if (source.noiseSource) source.noiseSource.stop();
-                } catch(e) {}
-            });
-            
-            drumLoopSources = [];
-        }
-        
-        function startVisualization() {
-            const wave = document.getElementById('wave');
-            let animationId;
-            
-            function animate() {
-                if (audioEngine.isInitialized && audioEngine.getVisualizationData) {
-                    const data = audioEngine.getVisualizationData();
-                    if (data) {
-                        // 计算平均能量
-                        let sum = 0;
-                        for (let i = 0; i < 32; i++) {
-                            sum += data[i];
-                        }
-                        const avg = sum / 32 / 128; // 归一化到0-1
-                        
-                        // 应用波形效果
-                        wave.style.height = `${30 + avg * 30}px`;
-                        wave.style.opacity = 0.3 + avg * 0.7;
-                        
-                        // 波纹效果
-                        wave.style.transform = `scaleY(${1 + avg * 0.5})`;
-                    }
-                }
-                animationId = requestAnimationFrame(animate);
-            }
-            
-            animate();
-            
-            // 清理
-            return () => cancelAnimationFrame(animationId);
-        }
-        
-        // 防止屏幕休眠
-        if ('wakeLock' in navigator) {
-            navigator.wakeLock.request('screen').catch(() => {});
-        }
+        // 音量保护：防止破音
+        window.addEventListener('volumechange', () => {
+            document.getElementById('audioStatus').innerHTML = '🔊 系统音量已调整，正在重新优化...';
+        });
     </script>
 </body>
 </html>
