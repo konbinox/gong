@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三句半·终极爆裂版</title>
+    <title>三句半·终极混合音效系统</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: "Microsoft YaHei", sans-serif;
-            background: linear-gradient(135deg, #000000, #1a0b2e, #4a1e6b);
+            background: linear-gradient(135deg, #000000, #0c0b1d, #2d1b69);
             color: white;
             min-height: 100vh;
             padding: 20px;
@@ -19,24 +19,23 @@
         h1 {
             font-size: 1.8rem;
             margin-bottom: 10px;
-            background: linear-gradient(90deg, #ff0080, #ff8c00, #40e0d0);
+            background: linear-gradient(90deg, #ff00cc, #3333ff, #00ccff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
+            text-shadow: 0 0 30px rgba(255, 0, 204, 0.3);
         }
         
-        /* 爆裂感控制区 */
-        .explosion-zone {
-            background: rgba(255, 0, 128, 0.1);
-            border: 2px solid rgba(255, 0, 128, 0.3);
+        /* 混合控制区 */
+        .hybrid-control {
+            background: rgba(255, 0, 204, 0.05);
+            border: 2px solid rgba(255, 0, 204, 0.3);
             border-radius: 15px;
             padding: 20px;
             margin: 20px 0;
             position: relative;
-            overflow: hidden;
         }
-        .explosion-zone::before {
-            content: '💥';
+        .hybrid-control::before {
+            content: '🎛️';
             position: absolute;
             top: 10px;
             right: 10px;
@@ -44,85 +43,68 @@
             opacity: 0.5;
         }
         
-        /* MP3鼓点区 */
-        .mp3-zone {
-            background: rgba(64, 224, 208, 0.1);
-            border: 2px solid rgba(64, 224, 208, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .mp3-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .mp3-btn {
-            padding: 15px;
-            border-radius: 10px;
-            border: none;
-            background: linear-gradient(135deg, #40e0d0, #20b2aa);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 1rem;
-        }
-        .mp3-btn.stop {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-        }
-        .mp3-btn:active {
-            transform: scale(0.95);
-        }
-        
-        /* 主控制面板 */
-        .control-panel {
+        /* 波形可视化 */
+        .wave-display {
+            height: 80px;
             background: rgba(0,0,0,0.4);
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 10px;
             margin: 15px 0;
+            position: relative;
+            overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .control-group {
-            margin: 15px 0;
-        }
-        .control-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
-        .slider {
+        .real-wave {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 8px;
-            -webkit-appearance: none;
-            background: linear-gradient(90deg, #ff0080, #ff8c00, #40e0d0);
-            border-radius: 4px;
-            outline: none;
+            height: 50%;
+            background: linear-gradient(to top, 
+                transparent,
+                rgba(0, 204, 255, 0.1),
+                rgba(0, 204, 255, 0.3)
+            );
+            border-bottom: 1px solid rgba(0, 204, 255, 0.2);
         }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: white;
-            cursor: pointer;
-            border: 2px solid #ff0080;
-            box-shadow: 0 0 15px rgba(255, 0, 128, 0.8);
+        .synth-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(to bottom, 
+                transparent,
+                rgba(255, 0, 204, 0.1),
+                rgba(255, 0, 204, 0.3)
+            );
+        }
+        .wave-label {
+            position: absolute;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.5);
+        }
+        .wave-label.real {
+            color: #00ccff;
+            top: 5px;
+        }
+        .wave-label.synth {
+            color: #ff00cc;
+            bottom: 5px;
+            top: auto;
         }
         
-        /* 演奏区 */
-        .play-zone {
+        /* 按钮网格 */
+        .button-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin: 20px 0;
         }
-        .gong-btn {
+        .sound-btn {
             padding: 25px 10px;
             border-radius: 12px;
             border: 2px solid;
@@ -139,7 +121,7 @@
             position: relative;
             overflow: hidden;
         }
-        .gong-btn::after {
+        .sound-btn::after {
             content: '';
             position: absolute;
             top: 50%;
@@ -147,255 +129,308 @@
             width: 0;
             height: 0;
             border-radius: 50%;
-            background: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.2);
             transform: translate(-50%, -50%);
             transition: width 0.3s, height 0.3s;
         }
-        .gong-btn:active::after {
+        .sound-btn:active::after {
             width: 100px;
             height: 100px;
         }
-        .gong-btn.chinese {
-            border-color: #ff0080;
-            background: linear-gradient(135deg, rgba(255,0,128,0.2), rgba(255,0,128,0.05));
+        .sound-btn.real {
+            border-color: #00ccff;
+            background: linear-gradient(135deg, rgba(0,204,255,0.2), rgba(0,204,255,0.05));
         }
-        .gong-btn.dramatic {
-            border-color: #ff8c00;
-            background: linear-gradient(135deg, rgba(255,140,0,0.2), rgba(255,140,0,0.05));
+        .sound-btn.hybrid {
+            border-color: #ff00cc;
+            background: linear-gradient(135deg, rgba(255,0,204,0.2), rgba(255,0,204,0.05));
         }
-        .gong-btn.impact {
-            border-color: #40e0d0;
-            background: linear-gradient(135deg, rgba(64,224,208,0.2), rgba(64,224,208,0.05));
+        .sound-btn.synth {
+            border-color: #33ff33;
+            background: linear-gradient(135deg, rgba(51,255,51,0.2), rgba(51,255,51,0.05));
         }
-        .gong-btn.final {
-            border-color: #9370db;
-            background: linear-gradient(135deg, rgba(147,112,219,0.2), rgba(147,112,219,0.05));
+        .sound-btn.auto {
+            border-color: #ffcc00;
+            background: linear-gradient(135deg, rgba(255,204,0,0.2), rgba(255,204,0,0.05));
+            grid-column: span 2;
         }
         
-        /* 状态指示 */
-        .status {
-            padding: 12px;
+        /* 加载状态 */
+        .load-status {
+            padding: 15px;
             border-radius: 10px;
-            margin: 10px 0;
+            margin: 15px 0;
             text-align: center;
-            font-size: 0.9rem;
-            background: rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
-        /* 音量条 */
-        .volume-bar {
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            margin: 15px 0;
-            overflow: hidden;
+        .load-status.success {
+            background: rgba(0,200,100,0.1);
+            border-color: #00cc66;
         }
-        .volume-level {
-            height: 100%;
-            background: linear-gradient(90deg, #ff0080, #ff8c00);
-            width: 80%;
-            transition: width 0.3s;
+        .load-status.loading {
+            background: rgba(255,204,0,0.1);
+            border-color: #ffcc00;
+        }
+        .load-status.error {
+            background: rgba(255,50,50,0.1);
+            border-color: #ff3333;
+        }
+        
+        /* 控制滑块 */
+        .slider-group {
+            margin: 15px 0;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            border-radius: 4px;
+            outline: none;
+        }
+        .slider.mix {
+            background: linear-gradient(90deg, #00ccff, #ff00cc);
+        }
+        .slider.delay {
+            background: linear-gradient(90deg, #3333ff, #33ff33);
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 2px solid;
+            box-shadow: 0 0 10px currentColor;
+        }
+        .slider.mix::-webkit-slider-thumb {
+            border-color: #ff00cc;
+        }
+        .slider.delay::-webkit-slider-thumb {
+            border-color: #33ff33;
+        }
+        
+        /* 预设按钮 */
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .preset-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .preset-btn.active {
+            background: rgba(255, 0, 204, 0.2);
+            border-color: #ff00cc;
         }
         
         @media (max-width: 600px) {
             h1 { font-size: 1.5rem; }
-            .gong-btn { padding: 20px 8px; font-size: 1rem; }
-            .mp3-controls { grid-template-columns: 1fr; }
+            .sound-btn { padding: 20px 8px; font-size: 1rem; }
+            .button-grid { gap: 10px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>💥 三句半·终极爆裂版 🥁</h1>
-            <p style="color: #a0d2ff; opacity: 0.9;">爆破感强化 + MP3鼓点插入</p>
+            <h1>🎚️ 真实录音 + 合成爆破混合引擎</h1>
+            <p style="color: #a0d2ff; opacity: 0.9;">9722.wav 真实锣声 × 爆裂合成音效</p>
         </header>
         
-        <!-- 爆裂感控制区 -->
-        <div class="explosion-zone">
-            <h3 style="margin: 0 0 15px 0; color: #ff0080;">💣 爆裂感强化引擎</h3>
-            <div class="control-group">
-                <div class="control-label">
-                    <span>💥 冲击强度</span>
-                    <span id="impactValue">85%</span>
+        <!-- 加载状态 -->
+        <div class="load-status" id="loadStatus">
+            🎵 正在初始化混合音频引擎...
+        </div>
+        
+        <!-- 波形可视化 -->
+        <div class="wave-display">
+            <div class="real-wave" id="realWave"></div>
+            <div class="synth-wave" id="synthWave"></div>
+            <div class="wave-label real">真实录音波形</div>
+            <div class="wave-label synth">合成爆破波形</div>
+        </div>
+        
+        <!-- 混合控制区 -->
+        <div class="hybrid-control">
+            <h3 style="margin: 0 0 15px 0; color: #ff00cc;">🎛️ 混合控制面板</h3>
+            
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🔀 真实/合成混合比</span>
+                    <span id="mixValue">50%真实 / 50%合成</span>
                 </div>
-                <input type="range" min="50" max="100" value="85" class="slider" id="impactSlider">
+                <input type="range" min="0" max="100" value="50" class="slider mix" id="mixSlider">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 5px;">
+                    <span style="color: #00ccff;">纯真实</span>
+                    <span style="color: #ff00cc;">纯合成</span>
+                </div>
             </div>
             
-            <div class="control-group">
-                <div class="control-label">
-                    <span>⚡ 瞬态锐度</span>
-                    <span id="transientValue">高</span>
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>⏱️ 合成延迟时间</span>
+                    <span id="delayValue">15ms</span>
                 </div>
-                <input type="range" min="1" max="3" step="1" value="3" class="slider" id="transientSlider">
+                <input type="range" min="0" max="100" value="15" class="slider delay" id="delaySlider">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 5px;">
+                    <span>同时发声</span>
+                    <span>延迟50ms</span>
+                </div>
             </div>
             
-            <div class="control-group">
-                <div class="control-label">
-                    <span>🌀 低频震动</span>
-                    <span id="vibrationValue">中强</span>
-                </div>
-                <input type="range" min="1" max="5" step="1" value="3" class="slider" id="vibrationSlider">
+            <!-- 预设按钮 -->
+            <div class="preset-buttons">
+                <button class="preset-btn" data-preset="realistic">🎤 真实为主</button>
+                <button class="preset-btn active" data-preset="balanced">⚖️ 平衡混合</button>
+                <button class="preset-btn" data-preset="explosive">💥 爆裂为主</button>
             </div>
         </div>
         
-        <!-- MP3鼓点区 -->
-        <div class="mp3-zone">
-            <h3 style="margin: 0 0 15px 0; color: #40e0d0;">🎵 MP3鼓点播放器</h3>
-            <div class="status" id="mp3Status">
-                准备加载 amen.mp3 鼓点文件
-            </div>
-            
-            <div class="mp3-controls">
-                <button class="mp3-btn" id="loadMp3Btn">
-                    <span>📁</span> 加载MP3文件
-                </button>
-                <button class="mp3-btn" id="playMp3Btn">
-                    <span>▶️</span> 播放鼓点
-                </button>
-                <button class="mp3-btn stop" id="stopMp3Btn">
-                    <span>⏹️</span> 停止播放
-                </button>
-                <button class="mp3-btn" id="autoMp3Btn">
-                    <span>🔁</span> 自动穿插
-                </button>
-            </div>
-            
-            <div class="volume-bar">
-                <div class="volume-level" id="mp3Volume"></div>
-            </div>
-        </div>
-        
-        <!-- 主控制面板 -->
-        <div class="control-panel">
-            <div class="control-group">
-                <div class="control-label">
-                    <span>📱 设备优化</span>
-                    <span id="deviceValue">自动</span>
-                </div>
-                <input type="range" min="1" max="4" step="1" value="2" class="slider" id="deviceSlider">
-            </div>
-            
-            <div class="control-group">
-                <div class="control-label">
-                    <span>🎚️ 总音量</span>
-                    <span id="volumeValue">80%</span>
-                </div>
-                <input type="range" min="20" max="100" value="80" class="slider" id="volumeSlider">
-            </div>
-        </div>
-        
-        <!-- 演奏区 -->
-        <div class="play-zone">
-            <button class="gong-btn chinese" data-type="chinese">
-                <span style="font-size: 1.5rem;">🥁</span>
-                中国大锣
-                <small>深沉爆裂</small>
+        <!-- 按钮网格 -->
+        <div class="button-grid">
+            <button class="sound-btn real" id="realBtn">
+                <span style="font-size: 1.5rem;">🎯</span>
+                纯真实音效
+                <small>9722.wav原声</small>
             </button>
             
-            <button class="gong-btn dramatic" data-type="dramatic">
-                <span style="font-size: 1.5rem;">💥</span>
-                戏剧强锣
-                <small>瞬间冲击</small>
-            </button>
-            
-            <button class="gong-btn impact" data-type="impact">
+            <button class="sound-btn hybrid" id="hybridBtn">
                 <span style="font-size: 1.5rem;">⚡</span>
-                瞬爆音效
-                <small>短促有力</small>
+                混合爆裂音
+                <small>真实+合成</small>
             </button>
             
-            <button class="gong-btn final" data-type="final">
+            <button class="sound-btn synth" id="synthBtn">
+                <span style="font-size: 1.5rem;">💣</span>
+                纯合成爆破
+                <small>物理建模</small>
+            </button>
+            
+            <button class="sound-btn auto" id="autoBtn">
                 <span style="font-size: 1.5rem;">🎬</span>
-                收尾重击
-                <small>震撼结尾</small>
+                三句半自动演示
+                <small>体验完整效果</small>
             </button>
         </div>
         
-        <!-- 状态指示 -->
-        <div class="status" id="audioStatus">
-            点击任意锣声按钮初始化音频引擎...
+        <!-- 状态信息 -->
+        <div class="load-status" id="statusInfo">
+            🔊 点击按钮开始体验混合音效
         </div>
     </div>
 
     <script>
-        // 终极爆裂版音频引擎
-        class UltimateExplosionEngine {
+        // 终极混合音频引擎
+        class UltimateHybridEngine {
             constructor() {
                 this.audioContext = null;
-                this.mp3Audio = null;
-                this.mp3Buffer = null;
-                this.isMp3Loaded = false;
-                this.isAutoPlaying = false;
-                this.autoTimer = null;
+                this.realAudioBuffer = null;  // 9722.wav
+                this.synthBuffers = {};       // 合成音效缓存
+                this.isRealLoaded = false;
+                this.isInitialized = false;
                 
-                // 爆裂感参数
-                this.impactStrength = 0.85;
-                this.transientSharpness = 3; // 1-3
-                this.vibrationStrength = 3; // 1-5
-                this.deviceMode = 2; // 1-4
-                this.masterVolume = 0.8;
+                // 混合参数
+                this.mixRatio = 0.5;          // 0=纯合成 1=纯真实
+                this.synthDelay = 0.015;      // 合成延迟（秒）
+                this.currentPreset = 'balanced';
                 
-                // 压缩器防止爆音
-                this.compressor = null;
+                // 音频节点缓存
+                this.realSource = null;
+                this.synthSource = null;
+                this.realGain = null;
+                this.synthGain = null;
+                
+                // 可视化数据
+                this.visualizationData = {
+                    real: new Array(100).fill(0),
+                    synth: new Array(100).fill(0)
+                };
             }
             
             async initialize() {
                 try {
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.updateStatus('音频引擎启动成功，正在加载真实录音...', 'loading');
                     
-                    // 创建压缩器防止爆音
-                    this.compressor = this.audioContext.createDynamicsCompressor();
-                    this.compressor.threshold.setValueAtTime(-20, this.audioContext.currentTime);
-                    this.compressor.knee.setValueAtTime(10, this.audioContext.currentTime);
-                    this.compressor.ratio.setValueAtTime(4, this.audioContext.currentTime);
-                    this.compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);
-                    this.compressor.release.setValueAtTime(0.25, this.audioContext.currentTime);
-                    this.compressor.connect(this.audioContext.destination);
+                    // 同时加载真实录音和生成合成音效
+                    await Promise.all([
+                        this.loadRealAudio(),
+                        this.generateSynthSounds()
+                    ]);
                     
-                    console.log('爆裂音频引擎启动');
-                    this.updateStatus('✅ 音频引擎就绪 | 爆裂模式激活', 'success');
+                    this.isInitialized = true;
+                    this.updateStatus('✅ 混合音频引擎就绪！点击按钮体验', 'success');
+                    this.startVisualization();
+                    
                     return true;
                 } catch (error) {
                     console.error('初始化失败:', error);
-                    this.updateStatus('❌ 音频初始化失败', 'error');
+                    this.updateStatus(`❌ 初始化失败: ${error.message}`, 'error');
                     return false;
                 }
             }
             
-            // 加载MP3文件
-            async loadMP3() {
+            // 加载真实录音 9722.wav
+            async loadRealAudio() {
                 try {
-                    this.updateStatus('🔄 正在加载 amen.mp3...', 'loading');
+                    this.updateStatus('正在加载 9722.wav 真实锣声...', 'loading');
                     
-                    // 方法1：从同一目录加载
-                    const response = await fetch('amen.mp3');
+                    // 尝试多种加载方式
+                    let response;
+                    const urls = [
+                        '9722.wav',
+                        './9722.wav',
+                        window.location.href.split('/').slice(0, -1).join('/') + '/9722.wav'
+                    ];
                     
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    for (const url of urls) {
+                        try {
+                            response = await fetch(url);
+                            if (response.ok) break;
+                        } catch (e) {
+                            continue;
+                        }
+                    }
+                    
+                    if (!response || !response.ok) {
+                        throw new Error('找不到 9722.wav 文件');
                     }
                     
                     const arrayBuffer = await response.arrayBuffer();
-                    this.mp3Buffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                    this.isMp3Loaded = true;
+                    this.realAudioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    this.isRealLoaded = true;
                     
-                    this.updateStatus('✅ MP3加载成功！点击播放按钮', 'success');
-                    document.getElementById('playMp3Btn').disabled = false;
-                    document.getElementById('autoMp3Btn').disabled = false;
+                    console.log('真实录音加载成功:', this.realAudioBuffer);
+                    this.updateStatus(`✅ 真实录音加载成功！时长: ${this.realAudioBuffer.duration.toFixed(2)}秒`, 'success');
                     
                 } catch (error) {
-                    console.error('MP3加载失败:', error);
+                    console.error('真实录音加载失败:', error);
+                    this.updateStatus('⚠️ 真实录音加载失败，使用合成音效替代', 'error');
                     
-                    // 备用方案：使用在线鼓点
-                    this.updateStatus('⚠️ 使用备用鼓点音效', 'warning');
-                    this.createFallbackBeat();
+                    // 生成替代的真实感音效
+                    this.generateRealisticAlternative();
                 }
             }
             
-            // 备用鼓点
-            createFallbackBeat() {
-                const duration = 4.0;
+            // 生成替代的真实感音效
+            generateRealisticAlternative() {
+                const duration = 3.0;
                 const buffer = this.audioContext.createBuffer(2, 
                     this.audioContext.sampleRate * duration, 
                     this.audioContext.sampleRate);
@@ -403,498 +438,435 @@
                 const left = buffer.getChannelData(0);
                 const right = buffer.getChannelData(1);
                 
-                // 创建简单的鼓点循环
+                // 创建真实感锣声
                 for (let i = 0; i < buffer.length; i++) {
-                    const time = i / this.audioContext.sampleRate;
+                    const t = i / this.audioContext.sampleRate;
+                    const envelope = Math.exp(-t * 2) * (1 - Math.exp(-t * 50));
                     
-                    // 底鼓
-                    if (time % 1.0 < 0.05) {
-                        left[i] = Math.sin(time * 100) * Math.exp(-time * 20);
-                        right[i] = left[i] * 0.8;
-                    }
-                    // 军鼓
-                    else if (time % 0.5 < 0.03 && time % 1.0 > 0.5) {
-                        left[i] = Math.random() * 0.3 * Math.exp(-time * 40);
-                        right[i] = left[i] * 0.9;
-                    }
-                    // 踩镲
-                    else if (time % 0.25 < 0.02) {
-                        left[i] = Math.random() * 0.1;
-                        right[i] = Math.random() * 0.1;
-                    }
-                }
-                
-                this.mp3Buffer = buffer;
-                this.isMp3Loaded = true;
-                document.getElementById('playMp3Btn').disabled = false;
-                document.getElementById('autoMp3Btn').disabled = false;
-            }
-            
-            // 播放MP3鼓点
-            playMP3(loop = false) {
-                if (!this.isMp3Loaded || !this.mp3Buffer) {
-                    this.updateStatus('❌ 请先加载MP3文件', 'error');
-                    return;
-                }
-                
-                if (this.mp3Audio) {
-                    this.mp3Audio.stop();
-                }
-                
-                this.mp3Audio = this.audioContext.createBufferSource();
-                this.mp3Audio.buffer = this.mp3Buffer;
-                this.mp3Audio.loop = loop;
-                
-                // 音量控制
-                const gainNode = this.audioContext.createGain();
-                gainNode.gain.value = this.masterVolume * 0.7;
-                
-                this.mp3Audio.connect(gainNode);
-                gainNode.connect(this.compressor);
-                
-                this.mp3Audio.start();
-                this.updateStatus('🎵 鼓点播放中...', 'playing');
-                
-                // 音量可视化
-                this.startMP3Visualization();
-                
-                this.mp3Audio.onended = () => {
-                    if (!loop) {
-                        this.updateStatus('✅ 鼓点播放结束', 'success');
-                    }
-                };
-            }
-            
-            // 停止MP3
-            stopMP3() {
-                if (this.mp3Audio) {
-                    this.mp3Audio.stop();
-                    this.mp3Audio = null;
-                }
-                this.updateStatus('⏹️ 鼓点已停止', 'info');
-            }
-            
-            // 自动穿插播放
-            startAutoPlay() {
-                if (this.isAutoPlaying) return;
-                
-                this.isAutoPlaying = true;
-                this.updateStatus('🔁 自动穿插模式启动', 'playing');
-                
-                // 每15-25秒随机播放一次鼓点
-                const playRandomBeat = () => {
-                    if (!this.isAutoPlaying) return;
+                    // 主频率
+                    const freq = 220 * Math.exp(-t * 0.5);
+                    const wave = Math.sin(t * freq * Math.PI * 2) * envelope;
                     
-                    const delay = 15000 + Math.random() * 10000; // 15-25秒
+                    // 泛音
+                    const overtone1 = Math.sin(t * freq * 3 * Math.PI * 2) * envelope * 0.3;
+                    const overtone2 = Math.sin(t * freq * 5 * Math.PI * 2) * envelope * 0.1;
                     
-                    this.autoTimer = setTimeout(() => {
-                        if (this.isAutoPlaying && this.isMp3Loaded) {
-                            this.playMP3();
-                            playRandomBeat(); // 安排下一次
-                        }
-                    }, delay);
-                };
-                
-                playRandomBeat();
-                
-                // 同时每5-8秒随机一个锣声
-                const playRandomGong = () => {
-                    if (!this.isAutoPlaying) return;
+                    // 瞬态噪声
+                    const noise = t < 0.05 ? (Math.random() * 2 - 1) * (0.1 - t * 2) : 0;
                     
-                    const delay = 5000 + Math.random() * 3000;
-                    
-                    setTimeout(() => {
-                        if (this.isAutoPlaying) {
-                            const types = ['chinese', 'dramatic', 'impact'];
-                            const type = types[Math.floor(Math.random() * types.length)];
-                            this.playExplosiveGong(type, 0.6 + Math.random() * 0.3);
-                            playRandomGong();
-                        }
-                    }, delay);
-                };
+                    left[i] = (wave + overtone1 + overtone2 + noise) * 0.6;
+                    right[i] = left[i] * 0.9;
+                }
                 
-                playRandomGong();
+                this.realAudioBuffer = buffer;
+                this.isRealLoaded = true;
             }
             
-            stopAutoPlay() {
-                this.isAutoPlaying = false;
-                if (this.autoTimer) {
-                    clearTimeout(this.autoTimer);
-                    this.autoTimer = null;
-                }
-                this.stopMP3();
-                this.updateStatus('⏹️ 自动模式停止', 'info');
-            }
-            
-            // 爆裂感锣声
-            playExplosiveGong(type, intensity = 1.0) {
-                if (!this.audioContext) {
-                    this.initialize();
-                    setTimeout(() => this.playExplosiveGong(type, intensity), 100);
-                    return;
-                }
+            // 生成合成爆破音效
+            generateSynthSounds() {
+                const types = ['explosion', 'impact', 'deep', 'sharp'];
                 
-                const now = this.audioContext.currentTime;
-                const duration = 2.5 * intensity;
-                
-                // 根据设备模式调整
-                const deviceSettings = {
-                    1: { maxFreq: 3000, bassLimit: 0.3 }, // 小喇叭
-                    2: { maxFreq: 4000, bassLimit: 0.6 }, // 自动
-                    3: { maxFreq: 5000, bassLimit: 0.8 }, // 外放
-                    4: { maxFreq: 8000, bassLimit: 1.0 }  // 耳机
-                };
-                const settings = deviceSettings[this.deviceMode] || deviceSettings[2];
-                
-                // 核心爆裂音
-                this.createExplosionCore(type, now, duration, settings, intensity);
-                
-                // 瞬态冲击
-                this.createTransientImpact(type, now, settings, intensity);
-                
-                // 低频震动
-                if (this.vibrationStrength > 1) {
-                    this.createVibration(type, now, duration, settings, intensity);
-                }
-                
-                // 更新状态
-                const names = { chinese: '中国大锣', dramatic: '戏剧强锣', impact: '瞬爆音效', final: '收尾重击' };
-                this.updateStatus(`💥 ${names[type]} | 强度:${Math.round(intensity*100)}%`, 'playing');
-            }
-            
-            createExplosionCore(type, startTime, duration, settings, intensity) {
-                const now = startTime;
-                
-                // 主频率
-                let baseFreq;
-                switch(type) {
-                    case 'chinese': baseFreq = 220; break;
-                    case 'dramatic': baseFreq = 330; break;
-                    case 'impact': baseFreq = 440; break;
-                    case 'final': baseFreq = 165; break;
-                    default: baseFreq = 220;
-                }
-                
-                // 1. 主振荡器
-                const mainOsc = this.audioContext.createOscillator();
-                mainOsc.type = 'sine';
-                mainOsc.frequency.setValueAtTime(baseFreq * settings.bassLimit, now);
-                
-                // 频率坠落效果 - 增强爆破感
-                mainOsc.frequency.exponentialRampToValueAtTime(
-                    baseFreq * 0.7 * settings.bassLimit,
-                    now + 0.1
-                );
-                
-                // 2. 高频谐波 - 增加爆裂感
-                const harmonicOscs = [];
-                for (let i = 1; i <= 4; i++) {
-                    const osc = this.audioContext.createOscillator();
-                    osc.type = i <= 2 ? 'square' : 'sawtooth'; // 高次谐波用更锐利的波形
-                    const freq = baseFreq * (2 + i * 0.8);
-                    osc.frequency.setValueAtTime(Math.min(freq, settings.maxFreq), now);
-                    harmonicOscs.push(osc);
-                }
-                
-                // 3. 白噪声层 - 爆破瞬态
-                const noiseBuffer = this.createExplosionNoise(duration, settings.maxFreq);
-                const noiseSource = this.audioContext.createBufferSource();
-                noiseSource.buffer = noiseBuffer;
-                
-                // 增益控制
-                const mainGain = this.audioContext.createGain();
-                const harmonicGains = harmonicOscs.map(() => this.audioContext.createGain());
-                const noiseGain = this.audioContext.createGain();
-                
-                // 爆裂式包络 - 极快起音，缓慢衰减
-                const impact = this.impactStrength * intensity;
-                
-                mainGain.gain.setValueAtTime(0, now);
-                mainGain.gain.linearRampToValueAtTime(impact * 0.7, now + 0.005); // 5ms起音
-                mainGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                
-                // 谐波包络 - 更快衰减
-                harmonicGains.forEach((gain, i) => {
-                    gain.gain.setValueAtTime(0, now);
-                    const peak = impact * (0.3 - i * 0.05);
-                    gain.gain.linearRampToValueAtTime(peak, now + 0.003 + i * 0.001);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + duration * (0.5 - i * 0.1));
+                types.forEach(type => {
+                    const buffer = this.createSynthSound(type);
+                    this.synthBuffers[type] = buffer;
                 });
                 
-                // 噪声包络 - 瞬间即逝
-                noiseGain.gain.setValueAtTime(0, now);
-                noiseGain.gain.linearRampToValueAtTime(impact * 0.4, now + 0.002);
-                noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05 * (4 - this.transientSharpness));
-                
-                // 滤波器 - 控制音色
-                const filter = this.audioContext.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(settings.maxFreq, now);
-                filter.frequency.exponentialRampToValueAtTime(1000, now + duration);
-                
-                // 连接到压缩器
-                mainOsc.connect(mainGain);
-                mainGain.connect(filter);
-                
-                harmonicOscs.forEach((osc, i) => {
-                    osc.connect(harmonicGains[i]);
-                    harmonicGains[i].connect(filter);
-                });
-                
-                noiseSource.connect(noiseGain);
-                noiseGain.connect(filter);
-                
-                filter.connect(this.compressor);
-                
-                // 启动
-                mainOsc.start(now);
-                mainOsc.stop(now + duration);
-                
-                harmonicOscs.forEach(osc => {
-                    osc.start(now);
-                    osc.stop(now + duration * 0.5);
-                });
-                
-                noiseSource.start(now);
+                console.log('合成音效生成完成');
             }
             
-            createTransientImpact(type, startTime, settings, intensity) {
-                // 额外的高频瞬态 - 增加"啪"的冲击感
-                const now = startTime;
+            createSynthSound(type) {
+                const duration = type === 'deep' ? 3.5 : 2.0;
+                const buffer = this.audioContext.createBuffer(2, 
+                    this.audioContext.sampleRate * duration, 
+                    this.audioContext.sampleRate);
                 
-                for (let i = 0; i < this.transientSharpness; i++) {
-                    const delay = i * 0.001; // 1ms间隔
-                    
-                    const clickOsc = this.audioContext.createOscillator();
-                    clickOsc.type = 'sine';
-                    clickOsc.frequency.setValueAtTime(800 + i * 400, now + delay);
-                    
-                    const clickGain = this.audioContext.createGain();
-                    clickGain.gain.setValueAtTime(0, now + delay);
-                    clickGain.gain.linearRampToValueAtTime(0.1 * intensity, now + delay + 0.0005);
-                    clickGain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.005);
-                    
-                    clickOsc.connect(clickGain);
-                    clickGain.connect(this.compressor);
-                    
-                    clickOsc.start(now + delay);
-                    clickOsc.stop(now + delay + 0.01);
-                }
-            }
-            
-            createVibration(type, startTime, duration, settings, intensity) {
-                // 低频震动效果
-                const now = startTime;
-                const vibrationGain = this.audioContext.createGain();
+                const left = buffer.getChannelData(0);
+                const right = buffer.getChannelData(1);
                 
-                // 创建震动脉冲
-                const pulseInterval = 0.05; // 50ms
-                const numPulses = Math.floor(duration / pulseInterval);
-                
-                for (let i = 0; i < numPulses; i++) {
-                    const pulseTime = now + i * pulseInterval;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / this.audioContext.sampleRate;
                     
-                    const pulseOsc = this.audioContext.createOscillator();
-                    pulseOsc.type = 'sine';
-                    pulseOsc.frequency.setValueAtTime(80 + Math.sin(i) * 10, pulseTime);
+                    let sample = 0;
                     
-                    const pulseGain = this.audioContext.createGain();
-                    const strength = this.vibrationStrength / 5 * intensity * Math.exp(-i * 0.2);
+                    switch(type) {
+                        case 'explosion': // 爆裂音
+                            sample = this.createExplosionSound(t);
+                            break;
+                        case 'impact': // 冲击音
+                            sample = this.createImpactSound(t);
+                            break;
+                        case 'deep': // 深沉音
+                            sample = this.createDeepSound(t);
+                            break;
+                        case 'sharp': // 尖锐音
+                            sample = this.createSharpSound(t);
+                            break;
+                    }
                     
-                    pulseGain.gain.setValueAtTime(0, pulseTime);
-                    pulseGain.gain.linearRampToValueAtTime(strength * 0.2, pulseTime + 0.01);
-                    pulseGain.gain.exponentialRampToValueAtTime(0.001, pulseTime + 0.03);
-                    
-                    pulseOsc.connect(pulseGain);
-                    pulseGain.connect(vibrationGain);
-                    
-                    pulseOsc.start(pulseTime);
-                    pulseOsc.stop(pulseTime + 0.04);
-                }
-                
-                vibrationGain.connect(this.compressor);
-            }
-            
-            createExplosionNoise(duration, maxFreq) {
-                const sampleRate = this.audioContext.sampleRate;
-                const bufferSize = sampleRate * 0.1; // 100ms噪声
-                const buffer = this.audioContext.createBuffer(1, bufferSize, sampleRate);
-                const data = buffer.getChannelData(0);
-                
-                // 爆炸式噪声 - 初期密集，快速衰减
-                for (let i = 0; i < bufferSize; i++) {
-                    const t = i / sampleRate;
-                    // 初期高频密集，快速衰减
-                    const envelope = Math.exp(-t * 100);
-                    const freqWeight = Math.sin(t * maxFreq * Math.PI);
-                    data[i] = (Math.random() * 2 - 1) * envelope * freqWeight;
+                    left[i] = sample;
+                    right[i] = sample * (0.8 + Math.sin(t) * 0.2);
                 }
                 
                 return buffer;
             }
             
-            startMP3Visualization() {
-                const volumeBar = document.getElementById('mp3Volume');
-                let lastUpdate = 0;
+            createExplosionSound(t) {
+                const attack = Math.min(t * 100, 1);
+                const decay = Math.exp(-t * 3);
+                const envelope = attack * decay;
                 
-                const updateVolume = () => {
-                    if (!this.mp3Audio || !this.isMp3Loaded) return;
+                // 低频主体
+                const freq = 80 * Math.exp(-t * 2);
+                const main = Math.sin(t * freq * Math.PI * 2) * envelope;
+                
+                // 高频爆裂
+                const burst = t < 0.1 ? Math.sin(t * 800 * Math.PI * 2) * (0.1 - t) * 10 : 0;
+                
+                // 噪声层
+                const noise = t < 0.2 ? (Math.random() * 2 - 1) * Math.exp(-t * 20) : 0;
+                
+                return (main * 0.7 + burst * 0.2 + noise * 0.1) * 0.8;
+            }
+            
+            createImpactSound(t) {
+                const envelope = Math.exp(-t * 8) * (1 - Math.exp(-t * 200));
+                const freq = 300 * Math.exp(-t * 4);
+                const main = Math.sin(t * freq * Math.PI * 2) * envelope;
+                
+                // 点击瞬态
+                const click = t < 0.005 ? Math.sin(t * 2000 * Math.PI * 2) * (1 - t * 200) : 0;
+                
+                return (main * 0.8 + click * 0.2) * 0.9;
+            }
+            
+            createDeepSound(t) {
+                const envelope = Math.exp(-t * 1.5);
+                const freq = 110 * (1 - t * 0.3);
+                const main = Math.sin(t * freq * Math.PI * 2) * envelope;
+                
+                // 泛音
+                const overtones = [2, 3, 4, 5].reduce((sum, mult) => {
+                    return sum + Math.sin(t * freq * mult * Math.PI * 2) * envelope * (0.5 / mult);
+                }, 0);
+                
+                return (main * 0.6 + overtones * 0.4) * 0.7;
+            }
+            
+            createSharpSound(t) {
+                const envelope = Math.exp(-t * 6);
+                const freq = 600 + Math.sin(t * 10) * 100;
+                const main = Math.sin(t * freq * Math.PI * 2) * envelope;
+                
+                // 金属感
+                const metal = Math.sin(t * 1200 * Math.PI * 2) * envelope * 0.3;
+                
+                return (main * 0.7 + metal * 0.3) * 0.8;
+            }
+            
+            // 播放混合音效
+            playHybridSound(type = 'balanced') {
+                if (!this.isInitialized) {
+                    this.initialize().then(() => this.playHybridSound(type));
+                    return;
+                }
+                
+                this.stopAllSounds();
+                
+                const now = this.audioContext.currentTime;
+                const delay = this.synthDelay;
+                
+                // 计算音量
+                const realVolume = this.mixRatio;
+                const synthVolume = 1 - this.mixRatio;
+                
+                // 播放真实录音
+                if (this.isRealLoaded && realVolume > 0.01) {
+                    this.realSource = this.audioContext.createBufferSource();
+                    this.realSource.buffer = this.realAudioBuffer;
                     
-                    const now = Date.now();
-                    if (now - lastUpdate > 100) { // 100ms更新一次
-                        // 模拟音量波动
-                        const volume = 60 + Math.sin(now / 200) * 20 + Math.random() * 20;
-                        volumeBar.style.width = Math.min(100, volume) + '%';
-                        lastUpdate = now;
+                    this.realGain = this.audioContext.createGain();
+                    this.realGain.gain.setValueAtTime(realVolume, now);
+                    
+                    this.realSource.connect(this.realGain);
+                    this.realGain.connect(this.audioContext.destination);
+                    
+                    this.realSource.start(now);
+                    
+                    // 更新可视化
+                    this.updateVisualization('real', 0.5 + realVolume * 0.5);
+                }
+                
+                // 播放合成音效（可选延迟）
+                if (synthVolume > 0.01) {
+                    setTimeout(() => {
+                        const synthType = this.getSynthTypeForPreset(type);
+                        this.synthSource = this.audioContext.createBufferSource();
+                        this.synthSource.buffer = this.synthBuffers[synthType];
+                        
+                        this.synthGain = this.audioContext.createGain();
+                        this.synthGain.gain.setValueAtTime(synthVolume, now + delay);
+                        
+                        this.synthSource.connect(this.synthGain);
+                        this.synthGain.connect(this.audioContext.destination);
+                        
+                        this.synthSource.start(now + delay);
+                        
+                        // 更新可视化
+                        this.updateVisualization('synth', 0.5 + synthVolume * 0.5);
+                    }, delay * 1000);
+                }
+                
+                // 更新状态
+                const mixText = this.mixRatio > 0.66 ? '真实为主' : 
+                              this.mixRatio < 0.33 ? '合成为主' : '平衡混合';
+                this.updateStatus(`🔊 播放中: ${mixText} (${Math.round(this.mixRatio*100)}%真实)`, 'success');
+            }
+            
+            // 播放纯真实音效
+            playRealOnly() {
+                if (!this.isRealLoaded) {
+                    this.updateStatus('❌ 真实录音未加载', 'error');
+                    return;
+                }
+                
+                this.stopAllSounds();
+                
+                this.realSource = this.audioContext.createBufferSource();
+                this.realSource.buffer = this.realAudioBuffer;
+                this.realSource.connect(this.audioContext.destination);
+                this.realSource.start();
+                
+                this.updateVisualization('real', 1.0);
+                this.updateStatus('🎯 播放纯真实录音 (9722.wav)', 'success');
+            }
+            
+            // 播放纯合成音效
+            playSynthOnly(type = 'explosion') {
+                this.stopAllSounds();
+                
+                this.synthSource = this.audioContext.createBufferSource();
+                this.synthSource.buffer = this.synthBuffers[type];
+                this.synthSource.connect(this.audioContext.destination);
+                this.synthSource.start();
+                
+                this.updateVisualization('synth', 1.0);
+                this.updateStatus('💣 播放纯合成爆破音效', 'success');
+            }
+            
+            // 停止所有声音
+            stopAllSounds() {
+                if (this.realSource) {
+                    try { this.realSource.stop(); } catch(e) {}
+                    this.realSource = null;
+                }
+                if (this.synthSource) {
+                    try { this.synthSource.stop(); } catch(e) {}
+                    this.synthSource = null;
+                }
+            }
+            
+            // 三句半自动演示
+            autoDemo() {
+                if (!this.isInitialized) {
+                    this.initialize();
+                    setTimeout(() => this.autoDemo(), 1000);
+                    return;
+                }
+                
+                this.updateStatus('🎬 开始三句半自动演示...', 'loading');
+                
+                // 演示序列
+                const sequence = [
+                    { type: 'real', delay: 0, desc: '第一句：真实锣声' },
+                    { type: 'real', delay: 1500, desc: '第二句：真实锣声' },
+                    { type: 'hybrid', preset: 'balanced', delay: 3000, desc: '第三句：混合音效' },
+                    { type: 'hybrid', preset: 'explosive', delay: 4500, desc: '半句：爆裂结尾！' }
+                ];
+                
+                let completed = 0;
+                sequence.forEach((item, index) => {
+                    setTimeout(() => {
+                        if (item.type === 'real') {
+                            this.playRealOnly();
+                        } else {
+                            this.currentPreset = item.preset;
+                            this.applyPreset(item.preset);
+                            this.playHybridSound(item.preset);
+                        }
+                        
+                        this.updateStatus(item.desc, 'success');
+                        completed++;
+                        
+                        // 全部完成
+                        if (completed === sequence.length) {
+                            setTimeout(() => {
+                                this.updateStatus('✅ 演示完成！现在可以自由体验', 'success');
+                            }, 2000);
+                        }
+                    }, item.delay);
+                });
+            }
+            
+            // 预设映射
+            getSynthTypeForPreset(preset) {
+                const mapping = {
+                    'realistic': 'deep',
+                    'balanced': 'explosion',
+                    'explosive': 'impact'
+                };
+                return mapping[preset] || 'explosion';
+            }
+            
+            // 应用预设
+            applyPreset(preset) {
+                this.currentPreset = preset;
+                
+                switch(preset) {
+                    case 'realistic':
+                        this.mixRatio = 0.8;  // 80%真实
+                        this.synthDelay = 0.01; // 10ms延迟
+                        break;
+                    case 'balanced':
+                        this.mixRatio = 0.5;  // 50%真实
+                        this.synthDelay = 0.015; // 15ms延迟
+                        break;
+                    case 'explosive':
+                        this.mixRatio = 0.2;  // 20%真实
+                        this.synthDelay = 0.02; // 20ms延迟
+                        break;
+                }
+                
+                // 更新UI
+                document.getElementById('mixSlider').value = this.mixRatio * 100;
+                document.getElementById('delaySlider').value = this.synthDelay * 1000;
+                this.updateMixValue();
+                this.updateDelayValue();
+                
+                // 更新预设按钮状态
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.preset === preset) {
+                        btn.classList.add('active');
                     }
-                    
-                    requestAnimationFrame(updateVolume);
-                };
-                
-                updateVolume();
+                });
             }
             
+            // 更新混合比例显示
+            updateMixValue() {
+                const realPercent = Math.round(this.mixRatio * 100);
+                const synthPercent = 100 - realPercent;
+                document.getElementById('mixValue').textContent = 
+                    `${realPercent}%真实 / ${synthPercent}%合成`;
+            }
+            
+            // 更新延迟显示
+            updateDelayValue() {
+                document.getElementById('delayValue').textContent = 
+                    `${Math.round(this.synthDelay * 1000)}ms`;
+            }
+            
+            // 更新状态
             updateStatus(message, type = 'info') {
-                const statusEl = document.getElementById('audioStatus');
-                statusEl.textContent = message;
+                const statusEl = document.getElementById('statusInfo');
+                const loadStatus = document.getElementById('loadStatus');
                 
-                const colors = {
-                    success: 'rgba(0,200,100,0.1)',
-                    error: 'rgba(255,50,50,0.1)',
-                    warning: 'rgba(255,200,50,0.1)',
-                    playing: 'rgba(64,224,208,0.1)',
-                    info: 'rgba(255,255,255,0.05)'
+                statusEl.textContent = message;
+                statusEl.className = `load-status ${type}`;
+                
+                if (type !== 'info') {
+                    loadStatus.textContent = message;
+                    loadStatus.className = `load-status ${type}`;
+                }
+            }
+            
+            // 更新可视化
+            updateVisualization(type, intensity) {
+                const wave = document.getElementById(type === 'real' ? 'realWave' : 'synthWave');
+                wave.style.height = `${intensity * 100}%`;
+                wave.style.opacity = intensity;
+                
+                // 添加波动效果
+                wave.style.transform = `scaleY(${1 + Math.sin(Date.now()/200) * 0.2})`;
+            }
+            
+            // 启动可视化循环
+            startVisualization() {
+                const animate = () => {
+                    // 实时更新波形
+                    const now = Date.now();
+                    const realIntensity = 0.3 + Math.sin(now / 500) * 0.1;
+                    const synthIntensity = 0.3 + Math.cos(now / 700) * 0.1;
+                    
+                    this.updateVisualization('real', realIntensity);
+                    this.updateVisualization('synth', synthIntensity);
+                    
+                    requestAnimationFrame(animate);
                 };
                 
-                statusEl.style.background = colors[type] || colors.info;
-                statusEl.style.borderColor = type === 'playing' ? '#40e0d0' : 'rgba(255,255,255,0.1)';
-            }
-            
-            setImpact(value) {
-                this.impactStrength = value / 100;
-                document.getElementById('impactValue').textContent = value + '%';
-            }
-            
-            setTransient(value) {
-                this.transientSharpness = value;
-                const labels = ['柔和', '中等', '锐利'];
-                document.getElementById('transientValue').textContent = labels[value-1];
-            }
-            
-            setVibration(value) {
-                this.vibrationStrength = value;
-                const labels = ['无', '微弱', '中强', '强烈', '震动'];
-                document.getElementById('vibrationValue').textContent = labels[value-1];
-            }
-            
-            setDeviceMode(value) {
-                this.deviceMode = value;
-                const labels = ['小喇叭', '自动', '外放', '耳机'];
-                document.getElementById('deviceValue').textContent = labels[value-1];
-            }
-            
-            setVolume(value) {
-                this.masterVolume = value / 100;
-                document.getElementById('volumeValue').textContent = value + '%';
+                animate();
             }
         }
         
         // 初始化引擎
-        const engine = new UltimateExplosionEngine();
+        const hybridEngine = new UltimateHybridEngine();
         
         // 页面加载
         document.addEventListener('DOMContentLoaded', () => {
-            // 初始化音频
-            engine.initialize();
+            // 立即初始化
+            hybridEngine.initialize();
             
-            // 绑定控制滑块
-            document.getElementById('impactSlider').addEventListener('input', (e) => {
-                engine.setImpact(parseInt(e.target.value));
+            // 绑定混合控制
+            document.getElementById('mixSlider').addEventListener('input', (e) => {
+                hybridEngine.mixRatio = parseInt(e.target.value) / 100;
+                hybridEngine.updateMixValue();
             });
             
-            document.getElementById('transientSlider').addEventListener('input', (e) => {
-                engine.setTransient(parseInt(e.target.value));
+            document.getElementById('delaySlider').addEventListener('input', (e) => {
+                hybridEngine.synthDelay = parseInt(e.target.value) / 1000;
+                hybridEngine.updateDelayValue();
             });
             
-            document.getElementById('vibrationSlider').addEventListener('input', (e) => {
-                engine.setVibration(parseInt(e.target.value));
-            });
-            
-            document.getElementById('deviceSlider').addEventListener('input', (e) => {
-                engine.setDeviceMode(parseInt(e.target.value));
-            });
-            
-            document.getElementById('volumeSlider').addEventListener('input', (e) => {
-                engine.setVolume(parseInt(e.target.value));
-            });
-            
-            // MP3控制按钮
-            document.getElementById('loadMp3Btn').addEventListener('click', () => {
-                engine.loadMP3();
-            });
-            
-            document.getElementById('playMp3Btn').addEventListener('click', () => {
-                engine.playMP3();
-            });
-            
-            document.getElementById('stopMp3Btn').addEventListener('click', () => {
-                engine.stopMP3();
-            });
-            
-            document.getElementById('autoMp3Btn').addEventListener('click', () => {
-                if (!engine.isAutoPlaying) {
-                    engine.startAutoPlay();
-                    document.getElementById('autoMp3Btn').innerHTML = '<span>⏹️</span> 停止自动';
-                } else {
-                    engine.stopAutoPlay();
-                    document.getElementById('autoMp3Btn').innerHTML = '<span>🔁</span> 自动穿插';
-                }
-            });
-            
-            // 锣声按钮
-            document.querySelectorAll('.gong-btn').forEach(btn => {
+            // 预设按钮
+            document.querySelectorAll('.preset-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const type = this.dataset.type;
-                    let intensity = 1.0;
-                    
-                    // 不同类型不同强度
-                    if (type === 'final') intensity = 1.2;
-                    if (type === 'impact') intensity = 0.9;
-                    
-                    engine.playExplosiveGong(type, intensity);
-                    
-                    // 按钮反馈效果
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 100);
+                    const preset = this.dataset.preset;
+                    hybridEngine.applyPreset(preset);
                 });
             });
             
-            // 设置初始值
-            engine.setImpact(85);
-            engine.setTransient(3);
-            engine.setVibration(3);
-            engine.setDeviceMode(2);
-            engine.setVolume(80);
+            // 音效按钮
+            document.getElementById('realBtn').addEventListener('click', () => {
+                hybridEngine.playRealOnly();
+            });
             
-            // 自动检测设备
-            setTimeout(() => {
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (isMobile) {
-                    engine.setDeviceMode(1);
-                    document.getElementById('deviceSlider').value = 1;
-                    engine.updateStatus('📱 检测到移动设备，已优化为小喇叭模式', 'info');
+            document.getElementById('hybridBtn').addEventListener('click', () => {
+                hybridEngine.playHybridSound(hybridEngine.currentPreset);
+            });
+            
+            document.getElementById('synthBtn').addEventListener('click', () => {
+                hybridEngine.playSynthOnly('explosion');
+            });
+            
+            document.getElementById('autoBtn').addEventListener('click', () => {
+                hybridEngine.autoDemo();
+            });
+            
+            // 初始应用平衡预设
+            hybridEngine.applyPreset('balanced');
+            
+            // 触摸解锁音频
+            document.body.addEventListener('touchstart', function unlockAudio() {
+                if (hybridEngine.audioContext && hybridEngine.audioContext.state === 'suspended') {
+                    hybridEngine.audioContext.resume();
                 }
-            }, 1000);
+                this.removeEventListener('touchstart', unlockAudio);
+            });
         });
         
-        // 触摸反馈优化
-        document.addEventListener('touchstart', function() {
-            if (engine.audioContext && engine.audioContext.state === 'suspended') {
-                engine.audioContext.resume();
-            }
-        }, { passive: true });
+        // 防止屏幕休眠
+        if ('wakeLock' in navigator) {
+            navigator.wakeLock.request('screen').catch(() => {});
+        }
     </script>
 </body>
 </html>
