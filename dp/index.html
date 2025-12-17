@@ -190,6 +190,50 @@
             transform: scale(0.95);
         }
         
+        /* 第四区：实验区 */
+        .experiment-zone {
+            background: linear-gradient(135deg, #ff6b6b, #ffd166);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 10px;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        
+        .experiment-title {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        
+        .experiment-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+        }
+        
+        .experiment-btn {
+            padding: 12px 5px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(26, 26, 46, 0.8);
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        
+        .experiment-btn:active {
+            background: rgba(26, 26, 46, 1);
+            transform: scale(0.95);
+            box-shadow: 0 0 15px #ffd166;
+        }
+        
         /* 音量条美化 */
         .volume-slider {
             width: 100%;
@@ -276,12 +320,12 @@
             <div id="fxStatus">关</div>
         </div>
         
-        <!-- 4. 小鼓时长 -->
+        <!-- 4. 欢庆锣鼓时长 -->
         <div class="control-item">
             <div style="font-size: 1.5rem;">⏱️</div>
-            <div>小鼓时长</div>
-            <input type="range" min="2" max="6" step="0.5" value="6" class="volume-slider" id="drumDuration">
-            <div id="durationValue">6秒</div>
+            <div>锣鼓时长</div>
+            <input type="range" min="4" max="12" step="0.5" value="8" class="volume-slider" id="drumDuration">
+            <div id="durationValue">8秒</div>
         </div>
     </div>
     
@@ -295,14 +339,14 @@
         
         <button class="instrument-btn drum-btn" id="drumBtn">
             <span style="font-size: 1.8rem;">🎯</span>
-            <span>间歇小鼓</span>
-            <small style="font-size: 0.8rem; opacity: 0.8;">限时播放</small>
+            <span>欢庆锣鼓</span>
+            <small style="font-size: 0.8rem; opacity: 0.8;">8秒循环</small>
         </button>
         
         <button class="instrument-btn cymbal-btn" id="cymbalBtn">
             <span style="font-size: 1.8rem;">💥</span>
             <span>大镲</span>
-            <small style="font-size: 0.8rem; opacity: 0.8;">音量加强</small>
+            <small style="font-size: 0.8rem; opacity: 0.8;">镲片音效</small>
         </button>
         
         <button class="instrument-btn woodblock-btn" id="woodblockBtn">
@@ -359,6 +403,14 @@
             </button>
         </div>
     </div>
+    
+    <!-- 第四区：实验区 -->
+    <div class="experiment-zone">
+        <div class="experiment-title">🎛️ 实验区 - 演出结束后炫酷用</div>
+        <div class="experiment-buttons" id="experimentButtons">
+            <!-- 实验区按钮将由JavaScript动态生成 -->
+        </div>
+    </div>
 
     <script>
         // 专业音频系统
@@ -372,14 +424,22 @@
                 // 音量设置
                 this.masterVolume = 0.8;
                 this.cymbalBoost = 2.0; // 200%
-                this.drumDuration = 6.0; // 小鼓最长6秒
+                this.drumDuration = 8.0; // 欢庆锣鼓8秒
                 
                 // 文件加载状态
                 this.fileStatus = {
-                    gong: { loaded: false, type: '真实录音', file: '9722.wav' },
-                    cymbal: { loaded: false, type: '真实录音', file: 'cymbal.wav' },
+                    gong: { loaded: false, type: '真实录音', file: 'happy-drum.wav' },  // ← 修改为 happy-drum
+                    cymbal: { loaded: false, type: '真实录音', file: 'cymbal1.wav' },    // ← 修改为 cymbal1
                     drum: { loaded: false, type: '合成音效', file: 'N/A' }
                 };
+                
+                // 实验区文件列表
+                this.experimentFiles = [
+                    '1427.wav', '3851.wav', '5975.wav', '9722.wav',
+                    'amen.mp3', 'bigger-gong.wav', 'cymbal.wav',
+                    'drum.wav', 'gong.wav', 'xm2415.wav',
+                    'xm2691.wav', 'y2431.wav', '快板.wav'
+                ];
                 
                 this.init();
             }
@@ -392,7 +452,8 @@
                     // 并行加载真实文件和生成合成音效
                     await Promise.all([
                         this.loadRealAudio(),
-                        this.generateSynthSounds()
+                        this.generateSynthSounds(),
+                        this.loadExperimentSounds()  // 加载实验区音效
                     ]);
                     
                     this.updateSystemStatus('🎉 系统就绪！可以开始表演', 'ready');
@@ -406,8 +467,8 @@
             // 加载真实音频文件
             async loadRealAudio() {
                 const files = [
-                    { name: 'gong', url: '9722.wav' },
-                    { name: 'cymbal', url: 'cymbal.wav' }
+                    { name: 'gong', url: 'happy-drum.wav' },      // ← 修改为 happy-drum
+                    { name: 'cymbal', url: 'cymbal1.wav' }        // ← 修改为 cymbal1
                 ];
                 
                 for (const file of files) {
@@ -434,7 +495,7 @@
             
             // 生成合成音效
             generateSynthSounds() {
-                // 小鼓 - 6秒限时
+                // 欢庆锣鼓 - 8秒中国特色
                 this.buffers.drum = this.createDrumSound(this.drumDuration);
                 
                 // 基础打击乐
@@ -444,6 +505,64 @@
                 
                 // 娱乐音效
                 this.generateFunSounds();
+            }
+            
+            // 加载实验区音效
+            async loadExperimentSounds() {
+                const loadPromises = this.experimentFiles.map(async (file) => {
+                    try {
+                        const response = await fetch(file);
+                        if (response.ok) {
+                            const arrayBuffer = await response.arrayBuffer();
+                            this.buffers[file] = await this.audioContext.decodeAudioData(arrayBuffer);
+                            console.log(`✅ 实验区加载: ${file}`);
+                            
+                            // 创建实验区按钮
+                            this.createExperimentButton(file);
+                        }
+                    } catch (error) {
+                        console.warn(`❌ 实验区加载失败: ${file}`, error);
+                    }
+                });
+                
+                await Promise.all(loadPromises);
+                this.updateSystemStatus('🎯 实验区音效加载完成', 'ready');
+            }
+            
+            // 创建实验区按钮
+            createExperimentButton(fileName) {
+                const buttonContainer = document.getElementById('experimentButtons');
+                if (!buttonContainer) return;
+                
+                const button = document.createElement('button');
+                button.className = 'experiment-btn';
+                button.dataset.file = fileName;
+                
+                // 设置按钮图标
+                let emoji = '🎵';
+                if (fileName.includes('gong')) emoji = '🥁';
+                if (fileName.includes('cymbal')) emoji = '💥';
+                if (fileName.includes('drum')) emoji = '🎯';
+                if (fileName.includes('快板')) emoji = '🎼';
+                if (fileName.includes('amen')) emoji = '🙏';
+                if (/^\d+\.wav$/.test(fileName)) emoji = '🎲';
+                
+                // 显示文件名（简化）
+                let displayName = fileName;
+                if (fileName.includes('bigger-gong')) displayName = '大锣';
+                if (fileName.includes('快板')) displayName = '快板';
+                if (fileName === 'amen.mp3') displayName = '阿门';
+                
+                button.innerHTML = `
+                    <span style="font-size: 1.2rem;">${emoji}</span>
+                    <span>${displayName.replace('.wav', '').replace('.mp3', '')}</span>
+                `;
+                
+                button.addEventListener('click', () => {
+                    this.playExperimentSound(fileName);
+                });
+                
+                buttonContainer.appendChild(button);
             }
             
             // 播放/停止乐器
@@ -514,7 +633,7 @@
                 
                 source.start();
                 
-                // 小鼓限时停止
+                // 欢庆锣鼓限时停止
                 if (type === 'drum') {
                     setTimeout(() => {
                         if (this.activeSources[type]) {
@@ -522,6 +641,28 @@
                         }
                     }, this.drumDuration * 1000);
                 }
+            }
+            
+            // 播放实验区音效
+            playExperimentSound(fileName) {
+                const buffer = this.buffers[fileName];
+                if (!buffer) {
+                    console.warn(`实验区音效未加载: ${fileName}`);
+                    return;
+                }
+                
+                const source = this.audioContext.createBufferSource();
+                source.buffer = buffer;
+                
+                const gainNode = this.audioContext.createGain();
+                source.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                gainNode.gain.value = this.masterVolume;
+                
+                source.start();
+                
+                // 添加炫酷特效
+                this.addExperimentVisual(fileName);
             }
             
             // 停止音效
@@ -604,7 +745,48 @@
                 }
             }
             
-            // 音效生成函数
+            // 添加实验区视觉特效
+            addExperimentVisual(fileName) {
+                const colors = ['#ff006e', '#8338ec', '#3a86ff', '#fb5607', '#ffbe0b'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                const flash = document.createElement('div');
+                flash.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    width: 200px;
+                    height: 200px;
+                    background: radial-gradient(circle, ${color}80, transparent 70%);
+                    pointer-events: none;
+                    z-index: 1000;
+                    transform: translate(-50%, -50%);
+                    animation: experimentFlash 1s ease-out;
+                    border-radius: 50%;
+                `;
+                
+                // 添加文件名显示
+                const text = document.createElement('div');
+                text.textContent = fileName.replace('.wav', '').replace('.mp3', '');
+                text.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    color: white;
+                    font-weight: bold;
+                    text-shadow: 0 0 10px black;
+                    font-size: 14px;
+                    text-align: center;
+                    padding: 0 5px;
+                `;
+                flash.appendChild(text);
+                
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 1000);
+            }
+            
+            // 音效生成函数 - 创建中国特色欢庆锣鼓
             createDrumSound(duration) {
                 const buffer = this.audioContext.createBuffer(2, 
                     this.audioContext.sampleRate * duration, 
@@ -612,29 +794,36 @@
                 const left = buffer.getChannelData(0);
                 const right = buffer.getChannelData(1);
                 
-                // 创建6秒的小鼓节奏
-                const bpm = 120;
+                // 创建中国特色欢庆锣鼓节奏
+                const bpm = 100; // 稍慢的欢庆节奏
                 const beatInterval = 60 / bpm;
                 
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / this.audioContext.sampleRate;
                     let sample = 0;
                     
-                    // 每拍一个鼓点
-                    if (t % beatInterval < 0.05) {
-                        const envelope = Math.exp(-(t % beatInterval) * 50);
-                        const freq = 150 * Math.exp(-(t % beatInterval) * 10);
-                        sample = Math.sin(t * freq * Math.PI * 2) * envelope * 0.6;
-                    }
-                    
-                    // 每小节加重拍
+                    // 主锣声（每小节第一拍）
                     if (Math.floor(t / beatInterval) % 4 === 0 && t % beatInterval < 0.1) {
-                        const envelope = Math.exp(-(t % beatInterval) * 30);
-                        sample += Math.sin(t * 100 * Math.PI * 2) * envelope * 0.8;
+                        const envelope = Math.exp(-(t % beatInterval) * 20);
+                        const freq = 180 * Math.exp(-(t % beatInterval) * 8);
+                        sample += Math.sin(t * freq * Math.PI * 2) * envelope * 0.8;
                     }
                     
-                    left[i] = sample;
-                    right[i] = sample * 0.9;
+                    // 鼓点伴奏（第二、四拍）
+                    if ((Math.floor(t / beatInterval) % 4 === 1 || Math.floor(t / beatInterval) % 4 === 3) 
+                        && t % beatInterval < 0.05) {
+                        const envelope = Math.exp(-(t % beatInterval) * 40);
+                        sample += (Math.random() * 2 - 1) * envelope * 0.4; // 加入噪音模拟鼓皮
+                    }
+                    
+                    // 镲片点缀（每拍）
+                    if (t % beatInterval < 0.02) {
+                        const envelope = Math.exp(-(t % beatInterval) * 60);
+                        sample += Math.sin(t * 2000 * Math.PI * 2) * envelope * 0.3;
+                    }
+                    
+                    left[i] = sample * 0.9;
+                    right[i] = sample * 0.85;
                 }
                 
                 return buffer;
@@ -870,7 +1059,7 @@
             
             setDrumDuration(value) {
                 this.drumDuration = value;
-                // 重新生成小鼓音效
+                // 重新生成欢庆锣鼓音效
                 if (this.buffers.drum) {
                     this.buffers.drum = this.createDrumSound(value);
                 }
@@ -942,7 +1131,7 @@
                 performanceSystem.setCymbalBoost(parseInt(value));
             });
             
-            // 小鼓时长控制
+            // 欢庆锣鼓时长控制
             const drumDuration = document.getElementById('drumDuration');
             const durationValue = document.getElementById('durationValue');
             
@@ -1035,6 +1224,12 @@
                     0% { opacity: 0; transform: scale(0.5); }
                     50% { opacity: 0.7; transform: scale(1); }
                     100% { opacity: 0; transform: scale(1.2); }
+                }
+                
+                @keyframes experimentFlash {
+                    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+                    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
+                    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
                 }
             `;
             document.head.appendChild(style);
