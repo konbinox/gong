@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三句半·智能打击乐手（有声版）</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: "Microsoft YaHei", sans-serif; 
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white; 
+            min-height: 100vh;
+            padding: 20px;
+            touch-action: manipulation;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; padding: 20px; }
+        h1 { font-size: 2rem; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .subtitle { opacity: 0.9; font-size: 1rem; margin-bottom: 10px; }
+        .tip { 
+            background: rgba(255,255,255,0.1); 
+            padding: 10px; border-radius: 10px; 
+            font-size: 0.9rem; margin-top: 10px;
+        }
+        
+        /* 角色选择 */
+        .role-selection { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin-bottom: 30px; 
+        }
+        .role-btn {
+            background: rgba(255,255,255,0.15); 
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px; 
+            padding: 25px 10px; 
+            font-size: 1.8rem;
+            color: white; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .role-btn:hover, .role-btn:active { 
+            background: rgba(255,255,255,0.25); 
+            transform: translateY(-2px); 
+        }
+        .role-btn.active { 
+            background: rgba(255,215,0,0.3); 
+            border-color: gold; 
+            box-shadow: 0 0 15px gold;
+        }
+        
+        /* 乐器选择 */
+        .instrument-selection { display: none; margin-bottom: 30px; }
+        .instrument-title { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            font-size: 1.3rem;
+        }
+        .instruments { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+        }
+        .instrument-btn {
+            background: rgba(0,0,0,0.2); 
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px; 
+            padding: 20px 10px; 
+            font-size: 1.1rem;
+            color: white; 
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .instrument-btn:hover, .instrument-btn:active { 
+            background: rgba(255,255,255,0.1); 
+            transform: scale(0.98);
+        }
+        
+        /* 演奏界面 */
+        .performance-screen { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: linear-gradient(45deg, #8B0000, #00008B);
+            z-index: 100;
+        }
+        .home-btn {
+            position: absolute; 
+            top: 20px; right: 20px; 
+            background: rgba(255,255,255,0.2); 
+            width: 50px; height: 50px; 
+            border-radius: 50%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            z-index: 101;
+            border: none;
+            color: white;
+        }
+        .drum-loop-btn {
+            position: absolute; 
+            bottom: 30px; right: 30px;
+            background: rgba(255,215,0,0.7); 
+            color: #333;
+            padding: 12px 18px; 
+            border-radius: 25px;
+            font-weight: bold; 
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: none;
+            font-size: 1rem;
+        }
+        .current-role { 
+            position: absolute; 
+            top: 30px; left: 20px; 
+            font-size: 1.2rem; 
+            background: rgba(0,0,0,0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        .touch-hint {
+            position: absolute;
+            bottom: 100px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6rem; }
+            .role-btn { 
+                padding: 20px 10px; 
+                font-size: 1.5rem; 
+            }
+            .current-role { 
+                top: 20px; 
+                left: 20px; 
+                font-size: 1rem; 
+            }
+        }
+        
+        /* 加载提示 */
+        .loading { 
+            text-align: center; 
+            padding: 20px; 
+            display: none;
+        }
+        .volume-test {
+            background: rgba(0,200,0,0.3);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎄 三句半智能打击乐手 🥁</h1>
+            <p class="subtitle">选角色 → 挑乐器 → 全屏点击演奏！</p>
+            <div class="tip">
+                <strong>使用提示：</strong>点击下方"测试声音"按钮，确认能听到"咚"声后开始使用！
+            </div>
+            <div class="volume-test" id="volumeTest">
+                🔊 点击这里测试声音 🔊
+            </div>
+        </header>
+        
+        <!-- 第一屏：角色选择 -->
+        <section id="roleScreen" class="role-selection">
+            <button class="role-btn" data-role="甲">甲</button>
+            <button class="role-btn" data-role="乙">乙</button>
+            <button class="role-btn" data-role="丙">丙</button>
+            <button class="role-btn" data-role="丁">丁</button>
+        </section>
+        
+        <!-- 第二屏：乐器选择 -->
+        <section id="instrumentScreen" class="instrument-selection">
+            <h2 class="instrument-title" id="instrumentTitle">选择你的乐器</h2>
+            <div class="instruments" id="instrumentList">
+                <!-- 乐器按钮由JS动态生成 -->
+            </div>
+        </section>
+        
+        <!-- 第三屏：演奏界面 -->
+        <section id="performanceScreen" class="performance-screen">
+            <button class="home-btn" id="homeBtn">🏠</button>
+            <div class="current-role" id="currentRoleDisplay"></div>
+            <div class="touch-hint">👆 点击屏幕任意位置演奏 👆</div>
+            <button class="drum-loop-btn" id="drumLoopBtn">🎵 开启鼓点循环</button>
+        </section>
+        
+        <!-- 加载提示 -->
+        <div class="loading" id="loading">
+            正在初始化音频引擎...
+        </div>
+    </div>
+
+    <script>
+        // 状态变量
+        let currentRole = '';
+        let currentInstrument = '';
+        let audioContext;
+        let isDrumLoopPlaying = false;
+        let drumLoopInterval;
+        
+        // 初始化音频上下文（兼容所有浏览器）
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('音频引擎启动成功！');
+                document.getElementById('loading').style.display = 'none';
+                
+                // 自动播放解锁（用户交互后）
+                document.body.addEventListener('click', function unlockAudio() {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    document.body.removeEventListener('click', unlockAudio);
+                });
+                
+            } catch (e) {
+                console.error('音频初始化失败:', e);
+                alert('提示：请确保手机未静音，并调大音量！');
+            }
+        }
+        
+        // 生成合成音效
+        function playSynthesizedSound(type) {
+            if (!audioContext) return;
+            
+            try {
+                const now = audioContext.currentTime;
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                // 根据不同乐器设置不同音色
+                let frequency = 440;
+                let duration = 0.3;
+                
+                switch(type) {
+                    case '木鱼': frequency = 800; duration = 0.1; break;
+                    case '响板': frequency = 1200; duration = 0.05; break;
+                    case '铃铛': frequency = 1567; duration = 0.8; break;
+                    case '小鼓': frequency = 150; duration = 0.2; break;
+                    case '沙锤': 
+                        // 沙锤效果：噪声
+                        const bufferSize = audioContext.sampleRate * duration;
+                        const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                        const output = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) {
+                            output[i] = Math.random() * 2 - 1;
+                        }
+                        const noise = audioContext.createBufferSource();
+                        noise.buffer = buffer;
+                        noise.connect(gainNode);
+                        noise.start();
+                        break;
+                    case '拍板': frequency = 500; duration = 0.15; break;
+                    case '镲': frequency = 2000; duration = 0.5; break;
+                    case '铃鼓': frequency = 800; duration = 0.3; break;
+                    case '欢呼': frequency = 600; duration = 0.4; break;
+                    case '大锣': frequency = 300; duration = 1.0; break;
+                    case '低音鼓': frequency = 100; duration = 0.4; break;
+                    case '爆炸': frequency = 80; duration = 0.6; break;
+                }
+                
+                if (type !== '沙锤') {
+                    oscillator.type = type === '大锣' ? 'sine' : 
+                                     type === '铃铛' ? 'sine' : 'square';
+                    oscillator.frequency.setValueAtTime(frequency, now);
+                    oscillator.connect(gainNode);
+                    oscillator.start(now);
+                    oscillator.stop(now + duration);
+                }
+                
+                gainNode.connect(audioContext.destination);
+                
+                // 音量包络
+                gainNode.gain.setValueAtTime(0.5, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+            } catch (e) {
+                console.log('播放失败，使用备用方案');
+                // 备用：播放简单的Beep声
+                playFallbackSound();
+            }
+        }
+        
+        // 备用音效
+        function playFallbackSound() {
+            try {
+                const audio = new Audio();
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                oscillator.connect(ctx.destination);
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 100);
+            } catch (e) {
+                // 终极备用：振动（如果手机支持）
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+        }
+        
+        // 播放音效
+        function playSound(instrumentName) {
+            if (!audioContext) {
+                initAudio();
+            }
+            playSynthesizedSound(instrumentName);
+        }
+        
+        // 开始鼓点循环
+        function startDrumLoop() {
+            if (isDrumLoopPlaying) return;
+            
+            isDrumLoopPlaying = true;
+            const btn = document.getElementById('drumLoopBtn');
+            btn.textContent = '⏹️ 关闭鼓点循环';
+            btn.style.background = 'rgba(255,50,50,0.7)';
+            
+            // 简单的鼓点循环：咚 次次 咚 次次
+            let beat = 0;
+            drumLoopInterval = setInterval(() => {
+                if (!audioContext) return;
+                
+                const now = audioContext.currentTime;
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // 强拍（咚）
+                if (beat % 4 === 0) {
+                    oscillator.frequency.setValueAtTime(150, now);
+                    gainNode.gain.setValueAtTime(0.3, now);
+                } 
+                // 弱拍（次次）
+                else if (beat % 2 === 0) {
+                    oscillator.frequency.setValueAtTime(800, now);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                } else {
+                    oscillator.stop();
+                    return;
+                }
+                
+                oscillator.start(now);
+                oscillator.stop(now + 0.1);
+                
+                beat = (beat + 1) % 4;
+            }, 250); // 每分钟240拍
+        }
+        
+        // 停止鼓点循环
+        function stopDrumLoop() {
+            isDrumLoopPlaying = false;
+            clearInterval(drumLoopInterval);
+            const btn = document.getElementById('drumLoopBtn');
+            btn.textContent = '🎵 开启鼓点循环';
+            btn.style.background = 'rgba(255,215,0,0.7)';
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 测试按钮
+            document.getElementById('volumeTest').addEventListener('click', function() {
+                initAudio();
+                setTimeout(() => {
+                    playSound('大锣');
+                    this.style.background = 'rgba(0,150,0,0.5)';
+                    this.innerHTML = '✅ 声音测试通过！可以开始使用了';
+                }, 100);
+            });
+            
+            // 角色选择事件
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentRole = this.dataset.role;
+                    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 显示乐器选择
+                    document.getElementById('roleScreen').style.display = 'none';
+                    const instrumentScreen = document.getElementById('instrumentScreen');
+                    instrumentScreen.style.display = 'block';
+                    document.getElementById('instrumentTitle').textContent = `角色【${currentRole}】选择乐器`;
+                    
+                    // 乐器配置
+                    const instruments = {
+                        '甲': ['木鱼', '响板', '铃铛'],
+                        '乙': ['小鼓', '沙锤', '拍板'],
+                        '丙': ['镲', '铃鼓', '欢呼'],
+                        '丁': ['大锣', '低音鼓', '爆炸']
+                    };
+                    
+                    // 生成乐器按钮
+                    const instrumentList = document.getElementById('instrumentList');
+                    instrumentList.innerHTML = '';
+                    instruments[currentRole].forEach(instrument => {
+                        const btn = document.createElement('button');
+                        btn.className = 'instrument-btn';
+                        btn.textContent = instrument;
+                        btn.addEventListener('click', function() {
+                            currentInstrument = instrument;
+                            startPerformance();
+                        });
+                        instrumentList.appendChild(btn);
+                    });
+                });
+            });
+            
+            // 主页按钮
+            document.getElementById('homeBtn').addEventListener('click', function() {
+                stopDrumLoop();
+                document.getElementById('performanceScreen').style.display = 'none';
+                document.getElementById('roleScreen').style.display = 'grid';
+                document.getElementById('instrumentScreen').style.display = 'none';
+            });
+            
+            // 鼓点循环按钮
+            document.getElementById('drumLoopBtn').addEventListener('click', function() {
+                if (!isDrumLoopPlaying) {
+                    startDrumLoop();
+                } else {
+                    stopDrumLoop();
+                }
+            });
+            
+            // 演奏界面点击事件
+            document.getElementById('performanceScreen').addEventListener('click', function(e) {
+                // 排除按钮区域
+                if (e.target.id === 'drumLoopBtn' || e.target.id === 'homeBtn') return;
+                
+                if (currentInstrument) {
+                    playSound(currentInstrument);
+                }
+            });
+        });
+        
+        // 开始演奏
+        function startPerformance() {
+            document.getElementById('instrumentScreen').style.display = 'none';
+            const perfScreen = document.getElementById('performanceScreen');
+            perfScreen.style.display = 'block';
+            document.getElementById('currentRoleDisplay').textContent = 
+                `${currentRole}：${currentInstrument}`;
+            
+            // 预加载音频
+            if (!audioContext) {
+                initAudio();
+            }
+        }
+        
+        // 防止屏幕休眠
+        if ('wakeLock' in navigator) {
+            try {
+                navigator.wakeLock.request('screen');
+            } catch (err) {
+                console.log('防休眠功能不可用');
+            }
+        }
+        
+        // 触摸反馈
+        document.addEventListener('touchstart', function() {
+            // 确保音频上下文已激活
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>
