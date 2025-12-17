@@ -16,6 +16,24 @@
             flex-direction: column;
         }
         
+        /* iOS解锁提示 */
+        #iosUnlock {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            text-align: center;
+            padding: 20px;
+        }
+        
         /* 顶部：系统状态 */
         .system-status {
             text-align: center;
@@ -286,6 +304,27 @@
     </style>
 </head>
 <body>
+    <!-- iOS解锁提示（仅iPhone显示） -->
+    <div id="iosUnlock" style="display: none;">
+        <h2>🎵 iPhone音频解锁</h2>
+        <p>iOS需要用户交互才能播放声音</p>
+        <button id="unlockAudioBtn" style="
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        ">
+            点击激活音频
+        </button>
+        <p style="margin-top: 20px; font-size: 12px; opacity: 0.7;">
+            请检查：1. 侧边静音开关已关闭 2. 音量已调大
+        </p>
+    </div>
+    
     <!-- 系统状态 -->
     <div class="system-status">
         <h2>🎭 三句半终极演出系统</h2>
@@ -334,19 +373,19 @@
         <button class="instrument-btn gong-btn" id="gongBtn">
             <span style="font-size: 1.8rem;">🥁</span>
             <span>大锣</span>
-            <small style="font-size: 0.8rem; opacity: 0.8;">真实录音</small>
+            <small style="font-size: 0.8rem; opacity: 0.8;">9722.wav</small>
         </button>
         
         <button class="instrument-btn drum-btn" id="drumBtn">
             <span style="font-size: 1.8rem;">🎯</span>
             <span>欢庆锣鼓</span>
-            <small style="font-size: 0.8rem; opacity: 0.8;">8秒循环</small>
+            <small style="font-size: 0.8rem; opacity: 0.8;">happy-drum.wav</small>
         </button>
         
         <button class="instrument-btn cymbal-btn" id="cymbalBtn">
             <span style="font-size: 1.8rem;">💥</span>
             <span>大镲</span>
-            <small style="font-size: 0.8rem; opacity: 0.8;">镲片音效</small>
+            <small style="font-size: 0.8rem; opacity: 0.8;">cymbal1.wav</small>
         </button>
         
         <button class="instrument-btn woodblock-btn" id="woodblockBtn">
@@ -413,6 +452,15 @@
     </div>
 
     <script>
+        // ====== iOS兼容性处理 ======
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+        
+        // 显示iOS解锁提示
+        if (isIOS) {
+            document.getElementById('iosUnlock').style.display = 'flex';
+        }
+        
         // 专业音频系统
         class UltimatePerformanceSystem {
             constructor() {
@@ -426,16 +474,16 @@
                 this.cymbalBoost = 2.0; // 200%
                 this.drumDuration = 8.0; // 欢庆锣鼓8秒
                 
-                // 文件加载状态
+                // 正确的文件映射
                 this.fileStatus = {
-                    gong: { loaded: false, type: '真实录音', file: 'happy-drum.wav' },  // ← 修改为 happy-drum
-                    cymbal: { loaded: false, type: '真实录音', file: 'cymbal1.wav' },    // ← 修改为 cymbal1
-                    drum: { loaded: false, type: '合成音效', file: 'N/A' }
+                    gong: { loaded: false, type: '真实录音', file: '9722.wav' },        // ✅ 大锣不变
+                    cymbal: { loaded: false, type: '真实录音', file: 'cymbal1.wav' },    // ✅ 响板换成cymbal1
+                    drum: { loaded: false, type: '真实录音', file: 'happy-drum.wav' }     // ✅ 小鼓换成happy-drum
                 };
                 
                 // 实验区文件列表
                 this.experimentFiles = [
-                    '1427.wav', '3851.wav', '5975.wav', '9722.wav',
+                    '1427.wav', '3851.wav', '5975.wav', 
                     'amen.mp3', 'bigger-gong.wav', 'cymbal.wav',
                     'drum.wav', 'gong.wav', 'xm2415.wav',
                     'xm2691.wav', 'y2431.wav', '快板.wav'
@@ -446,29 +494,60 @@
             
             async init() {
                 try {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // iOS兼容的AudioContext创建方式
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContextClass();
+                    
+                    // iOS需要等待用户交互
+                    if (this.audioContext.state === 'suspended') {
+                        this.updateSystemStatus('👆 点击按钮激活音频', 'loading');
+                        
+                        // 等待用户点击解锁按钮
+                        await new Promise((resolve) => {
+                            const unlockBtn = document.getElementById('unlockAudioBtn');
+                            if (unlockBtn) {
+                                unlockBtn.addEventListener('click', async () => {
+                                    await this.audioContext.resume();
+                                    document.getElementById('iosUnlock').style.display = 'none';
+                                    resolve();
+                                });
+                            } else {
+                                resolve();
+                            }
+                        });
+                    }
+                    
                     this.updateSystemStatus('音频引擎启动成功', 'ready');
                     
                     // 并行加载真实文件和生成合成音效
                     await Promise.all([
                         this.loadRealAudio(),
                         this.generateSynthSounds(),
-                        this.loadExperimentSounds()  // 加载实验区音效
+                        this.loadExperimentSounds()
                     ]);
                     
                     this.updateSystemStatus('🎉 系统就绪！可以开始表演', 'ready');
                     this.enableAllButtons();
                     
+                    // iOS特殊提示
+                    if (isIOS) {
+                        setTimeout(() => {
+                            this.updateSystemStatus('📱 iPhone模式：确保静音开关关闭', 'ready');
+                        }, 2000);
+                    }
+                    
                 } catch (error) {
                     this.updateSystemStatus('❌ 初始化失败: ' + error.message, 'error');
+                    console.error(error);
                 }
             }
             
             // 加载真实音频文件
             async loadRealAudio() {
                 const files = [
-                    { name: 'gong', url: 'happy-drum.wav' },      // ← 修改为 happy-drum
-                    { name: 'cymbal', url: 'cymbal1.wav' }        // ← 修改为 cymbal1
+                    { name: 'gong', url: '9722.wav' },            // ✅ 大锣用9722.wav
+                    { name: 'cymbal', url: 'cymbal1.wav' },       // ✅ 大镲用cymbal1.wav
+                    { name: 'drum', url: 'happy-drum.wav' }       // ✅ 欢庆锣鼓用happy-drum.wav
                 ];
                 
                 for (const file of files) {
@@ -477,13 +556,14 @@
                         const response = await fetch(file.url);
                         
                         if (!response.ok) {
-                            throw new Error('文件未找到');
+                            throw new Error('文件未找到: ' + file.url);
                         }
                         
                         const arrayBuffer = await response.arrayBuffer();
                         this.buffers[file.name] = await this.audioContext.decodeAudioData(arrayBuffer);
                         this.fileStatus[file.name].loaded = true;
                         this.updateFileStatus(file.name, 'loaded');
+                        console.log(`✅ 加载成功: ${file.name} -> ${file.url}`);
                         
                     } catch (error) {
                         console.warn(`${file.name} 加载失败:`, error);
@@ -495,10 +575,7 @@
             
             // 生成合成音效
             generateSynthSounds() {
-                // 欢庆锣鼓 - 8秒中国特色
-                this.buffers.drum = this.createDrumSound(this.drumDuration);
-                
-                // 基础打击乐
+                // 基础打击乐（保持原有的合成音效）
                 this.buffers.woodblock = this.createWoodblockSound();
                 this.buffers.clapper = this.createClapperSound();
                 this.buffers.bell = this.createBellSound();
@@ -583,7 +660,18 @@
             }
             
             // 播放音效
-            playSound(type, isFunEffect = false) {
+            async playSound(type, isFunEffect = false) {
+                // iOS检查：确保音频上下文已激活
+                if (this.audioContext.state === 'suspended') {
+                    try {
+                        await this.audioContext.resume();
+                    } catch (err) {
+                        console.error('无法恢复音频上下文:', err);
+                        alert('请先点击屏幕激活音频');
+                        return;
+                    }
+                }
+                
                 const buffer = this.buffers[type];
                 if (!buffer) {
                     console.error(`音效未加载: ${type}`);
@@ -644,7 +732,12 @@
             }
             
             // 播放实验区音效
-            playExperimentSound(fileName) {
+            async playExperimentSound(fileName) {
+                // iOS检查
+                if (this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+                
                 const buffer = this.buffers[fileName];
                 if (!buffer) {
                     console.warn(`实验区音效未加载: ${fileName}`);
@@ -704,12 +797,12 @@
             }
             
             // 播放娱乐音效
-            playFunEffect(type) {
+            async playFunEffect(type) {
                 if (!this.effectsEnabled) {
                     this.enableEffects(true); // 自动开启特效
                 }
                 
-                this.playSound(type, true);
+                await this.playSound(type, true);
                 
                 // 额外视觉效果
                 this.addVisualEffect(type);
@@ -786,49 +879,7 @@
                 setTimeout(() => flash.remove(), 1000);
             }
             
-            // 音效生成函数 - 创建中国特色欢庆锣鼓
-            createDrumSound(duration) {
-                const buffer = this.audioContext.createBuffer(2, 
-                    this.audioContext.sampleRate * duration, 
-                    this.audioContext.sampleRate);
-                const left = buffer.getChannelData(0);
-                const right = buffer.getChannelData(1);
-                
-                // 创建中国特色欢庆锣鼓节奏
-                const bpm = 100; // 稍慢的欢庆节奏
-                const beatInterval = 60 / bpm;
-                
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / this.audioContext.sampleRate;
-                    let sample = 0;
-                    
-                    // 主锣声（每小节第一拍）
-                    if (Math.floor(t / beatInterval) % 4 === 0 && t % beatInterval < 0.1) {
-                        const envelope = Math.exp(-(t % beatInterval) * 20);
-                        const freq = 180 * Math.exp(-(t % beatInterval) * 8);
-                        sample += Math.sin(t * freq * Math.PI * 2) * envelope * 0.8;
-                    }
-                    
-                    // 鼓点伴奏（第二、四拍）
-                    if ((Math.floor(t / beatInterval) % 4 === 1 || Math.floor(t / beatInterval) % 4 === 3) 
-                        && t % beatInterval < 0.05) {
-                        const envelope = Math.exp(-(t % beatInterval) * 40);
-                        sample += (Math.random() * 2 - 1) * envelope * 0.4; // 加入噪音模拟鼓皮
-                    }
-                    
-                    // 镲片点缀（每拍）
-                    if (t % beatInterval < 0.02) {
-                        const envelope = Math.exp(-(t % beatInterval) * 60);
-                        sample += Math.sin(t * 2000 * Math.PI * 2) * envelope * 0.3;
-                    }
-                    
-                    left[i] = sample * 0.9;
-                    right[i] = sample * 0.85;
-                }
-                
-                return buffer;
-            }
-            
+            // 音效生成函数
             createWoodblockSound() {
                 const duration = 0.3;
                 const buffer = this.audioContext.createBuffer(1, 
@@ -887,6 +938,8 @@
                     this.buffers.gong = this.createGongSound();
                 } else if (type === 'cymbal') {
                     this.buffers.cymbal = this.createCymbalSound();
+                } else if (type === 'drum') {
+                    this.buffers.drum = this.createDrumSound(this.drumDuration);
                 }
                 this.fileStatus[type].loaded = true;
             }
@@ -932,6 +985,25 @@
                 return buffer;
             }
             
+            createDrumSound(duration) {
+                const buffer = this.audioContext.createBuffer(2, 
+                    this.audioContext.sampleRate * duration, 
+                    this.audioContext.sampleRate);
+                const left = buffer.getChannelData(0);
+                const right = buffer.getChannelData(1);
+                
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / this.audioContext.sampleRate;
+                    const env = Math.exp(-t * 2);
+                    const freq = 150;
+                    const wave = Math.sin(t * freq * Math.PI * 2) * env;
+                    left[i] = wave * 0.6;
+                    right[i] = wave * 0.6;
+                }
+                
+                return buffer;
+            }
+            
             // 娱乐音效生成
             createSurpriseSound() {
                 const duration = 1.5;
@@ -960,14 +1032,12 @@
                 const left = buffer.getChannelData(0);
                 const right = buffer.getChannelData(1);
                 
-                // 模拟掌声：随机脉冲
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / this.audioContext.sampleRate;
                     const env = Math.exp(-t * 1.5);
                     
-                    // 随机掌声脉冲
                     let clap = 0;
-                    if (Math.random() < 0.3) { // 30%的概率有掌声
+                    if (Math.random() < 0.3) {
                         const phase = Math.random() * Math.PI * 2;
                         clap = Math.sin(t * 500 * Math.PI * 2 + phase) * env * 0.3;
                     }
@@ -1059,10 +1129,6 @@
             
             setDrumDuration(value) {
                 this.drumDuration = value;
-                // 重新生成欢庆锣鼓音效
-                if (this.buffers.drum) {
-                    this.buffers.drum = this.createDrumSound(value);
-                }
             }
             
             enableEffects(enabled) {
@@ -1107,10 +1173,13 @@
         }
         
         // 初始化系统
-        const performanceSystem = new UltimatePerformanceSystem();
+        let performanceSystem;
         
         // DOM加载完成后绑定事件
         document.addEventListener('DOMContentLoaded', () => {
+            // 先创建系统实例
+            performanceSystem = new UltimatePerformanceSystem();
+            
             // 音量控制
             const masterVolume = document.getElementById('masterVolume');
             const volumeValue = document.getElementById('volumeValue');
@@ -1209,12 +1278,6 @@
                     e.preventDefault();
                 }
                 lastTap = now;
-                
-                // 解锁音频
-                if (performanceSystem.audioContext && 
-                    performanceSystem.audioContext.state === 'suspended') {
-                    performanceSystem.audioContext.resume();
-                }
             });
             
             // 添加CSS动画
